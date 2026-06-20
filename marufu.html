@@ -1,0 +1,927 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>四季のおくりもの</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Kaisei+Decol:wght@400;700&family=M+PLUS+Rounded+1c:wght@400;700;800&display=swap');
+:root{
+  --sp:#e0608a;--su:#2a9d8f;--au:#e07b39;--wi:#4a7fb5;
+  --sp-l:#ffd6e8;--su-l:#b8f0e8;--au-l:#ffd8aa;--wi-l:#c0d8f8;
+  --bg:#fdf6ee;--cb:#5a3f2a;--text:#2d1f1f;--ui:#fff9f2;
+  --sh:rgba(80,40,20,0.15);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;overflow:hidden;}
+body{font-family:'M PLUS Rounded 1c',sans-serif;background:var(--bg);color:var(--text);display:flex;flex-direction:column;height:100dvh;}
+
+/* HEADER */
+header{flex-shrink:0;background:linear-gradient(120deg,#f9a8c9 0%,#6dd0c5 38%,#f4a261 68%,#90b8e0 100%);padding:7px 12px 5px;padding-top:calc(7px + env(safe-area-inset-top,0px));text-align:center;box-shadow:0 2px 8px var(--sh);}
+header h1{font-family:'Kaisei Decol',serif;font-size:clamp(.9rem,4vw,1.2rem);color:#fff;text-shadow:0 2px 5px rgba(0,0,0,.28);letter-spacing:.04em;}
+header p{font-size:.57rem;color:rgba(255,255,255,.9);margin-top:1px;}
+
+/* ── SETUP ── */
+#setup-screen{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;display:flex;flex-direction:column;align-items:center;gap:14px;padding:18px 14px calc(18px + env(safe-area-inset-bottom,0px));}
+.section-label{font-size:.76rem;font-weight:800;color:#666;text-align:center;}
+
+/* diff */
+.diff-row{display:flex;gap:7px;width:100%;max-width:360px;}
+.diff-btn{flex:1;padding:9px 4px;border:2.5px solid #ddd;border-radius:11px;background:white;cursor:pointer;text-align:center;font-family:'M PLUS Rounded 1c',sans-serif;font-size:.68rem;font-weight:800;box-shadow:0 2px 5px var(--sh);transition:all .15s;}
+.diff-btn:active{transform:scale(.92);}
+.diff-btn .di{font-size:1.05rem;display:block;}
+.diff-btn .dn{font-size:.55rem;color:#888;display:block;margin-top:2px;font-weight:400;}
+.diff-btn.lv1.sel{border-color:#82c99a;background:#f0fff4;color:#2e7d52;}
+.diff-btn.lv2.sel{border-color:var(--au);background:#fff8f0;color:#a05010;}
+.diff-btn.lv3.sel{border-color:var(--sp);background:#fff0f5;color:#9a2050;}
+
+/* place option toggle */
+.option-row{display:flex;align-items:center;gap:10px;width:100%;max-width:360px;background:white;border-radius:12px;padding:10px 14px;border:1px solid #e8d9c8;box-shadow:0 2px 5px var(--sh);}
+.option-row label.opt-label{font-size:.72rem;font-weight:700;flex:1;cursor:pointer;line-height:1.4;}
+.option-row .opt-sub{font-size:.58rem;color:#888;display:block;margin-top:2px;font-weight:400;}
+.toggle{position:relative;width:38px;height:22px;flex-shrink:0;}
+.toggle input{opacity:0;width:0;height:0;}
+.toggle-track{position:absolute;inset:0;background:#ccc;border-radius:11px;transition:.25s;}
+.toggle input:checked+.toggle-track{background:var(--sp);}
+.toggle-track::before{content:'';position:absolute;width:16px;height:16px;left:3px;top:3px;background:white;border-radius:50%;transition:.25s;box-shadow:0 1px 3px rgba(0,0,0,.2);}
+.toggle input:checked+.toggle-track::before{transform:translateX(16px);}
+
+/* rules */
+.rules-box{background:white;border-radius:13px;padding:11px 13px;width:100%;max-width:360px;border:1px solid #e8d9c8;box-shadow:0 2px 6px var(--sh);}
+.rules-box h3{font-size:.72rem;font-weight:800;color:var(--sp);margin-bottom:5px;}
+.rules-box p{font-size:.62rem;line-height:1.65;color:#444;}
+.tag{display:inline-block;padding:1px 5px;border-radius:4px;font-size:.57rem;font-weight:800;color:white;margin:1px 1px;}
+.t-mine{background:var(--su);}.t-item{background:var(--au);}.t-other{background:#aaa;}
+.start-btn{padding:13px 0;width:min(220px,76%);background:linear-gradient(135deg,var(--sp),var(--su));color:white;border:none;border-radius:26px;font-size:.95rem;font-family:'M PLUS Rounded 1c',sans-serif;font-weight:800;cursor:pointer;box-shadow:0 4px 14px var(--sh);}
+.start-btn:active{transform:scale(.96);}
+
+/* ── DEAL SCREEN ── */
+#deal-screen{display:none;flex:1;overflow:hidden;flex-direction:column;align-items:center;justify-content:center;gap:18px;padding:20px 16px calc(20px + env(safe-area-inset-bottom,0px));}
+#deal-screen h2{font-family:'Kaisei Decol',serif;font-size:1.1rem;color:var(--text);text-align:center;}
+#deal-card-area{display:flex;flex-direction:column;align-items:center;gap:12px;}
+.deal-card{
+  width:100px;height:100px;border-radius:14px;border:3px solid transparent;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:3px;padding:6px;box-shadow:0 6px 20px var(--sh);
+  transform:scale(0);transition:transform .4s cubic-bezier(.34,1.56,.64,1);
+}
+.deal-card.show{transform:scale(1);}
+.deal-card.s-春{background:linear-gradient(150deg,var(--sp-l),#ffe8f5);border-color:var(--sp);}
+.deal-card.s-夏{background:linear-gradient(150deg,var(--su-l),#d8faf5);border-color:var(--su);}
+.deal-card.s-秋{background:linear-gradient(150deg,var(--au-l),#ffecd0);border-color:var(--au);}
+.deal-card.s-冬{background:linear-gradient(150deg,var(--wi-l),#ddeeff);border-color:var(--wi);}
+.deal-card .dc-s{font-size:.6rem;font-weight:800;padding:2px 7px;border-radius:5px;color:#fff;}
+.deal-card .dc-icon{font-size:2.8rem;line-height:1;}
+.deal-card .dc-label{font-size:.72rem;font-weight:800;color:#444;}
+#deal-msg{font-size:.85rem;font-weight:700;text-align:center;color:var(--text);line-height:1.5;}
+#deal-next-btn{padding:12px 0;width:min(200px,72%);background:linear-gradient(135deg,var(--sp),var(--su));color:white;border:none;border-radius:24px;font-size:.9rem;font-family:'M PLUS Rounded 1c',sans-serif;font-weight:800;cursor:pointer;box-shadow:0 3px 10px var(--sh);}
+#deal-next-btn:active{transform:scale(.96);}
+
+/* ── PLACE SCREEN ── */
+#place-screen{display:none;flex:1;overflow:hidden;flex-direction:column;padding:4px 4px calc(4px + env(safe-area-inset-bottom,0px));gap:4px;}
+#place-banner{flex-shrink:0;text-align:center;padding:6px 10px;background:linear-gradient(120deg,#fff0f5,#fffde8);border-radius:14px;font-size:clamp(.6rem,2.8vw,.76rem);font-weight:700;box-shadow:0 1px 4px var(--sh);min-height:28px;display:flex;align-items:center;justify-content:center;line-height:1.3;}
+#place-card-preview{flex-shrink:0;display:flex;justify-content:center;padding:2px;}
+.preview-card{
+  width:clamp(48px,14vw,64px);aspect-ratio:1/1;border-radius:8px;border:2.5px solid transparent;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;padding:3px;
+  box-shadow:0 3px 10px var(--sh);
+  animation:pulse 1.2s ease-in-out infinite;
+}
+@keyframes pulse{0%,100%{box-shadow:0 3px 10px var(--sh);}50%{box-shadow:0 3px 18px rgba(224,96,138,.5);}}
+.preview-card.s-春{background:linear-gradient(150deg,var(--sp-l),#ffe8f5);border-color:var(--sp);}
+.preview-card.s-夏{background:linear-gradient(150deg,var(--su-l),#d8faf5);border-color:var(--su);}
+.preview-card.s-秋{background:linear-gradient(150deg,var(--au-l),#ffecd0);border-color:var(--au);}
+.preview-card.s-冬{background:linear-gradient(150deg,var(--wi-l),#ddeeff);border-color:var(--wi);}
+.pc-s{font-size:clamp(.3rem,1.2vw,.42rem);font-weight:800;padding:1px 3px;border-radius:2px;color:#fff;}
+.ls-春{background:var(--sp);}.ls-夏{background:var(--su);}.ls-秋{background:var(--au);}.ls-冬{background:var(--wi);}
+.pc-icon{font-size:clamp(.9rem,3.8vw,1.3rem);line-height:1;}
+.pc-label{font-size:clamp(.26rem,1.1vw,.36rem);color:#444;font-weight:700;}
+
+#place-grid{display:grid;grid-template-columns:repeat(8,1fr);gap:3px;flex-shrink:0;}
+.place-slot{
+  aspect-ratio:1/1;border-radius:4px;
+  background:rgba(224,96,138,.06);border:1.5px dashed rgba(224,96,138,.25);
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;font-size:.75rem;color:rgba(224,96,138,.35);
+  transition:background .12s;
+}
+.place-slot:active{background:rgba(224,96,138,.18);}
+.place-slot.slot-chosen{background:var(--sp-l);border:2px solid var(--sp);font-size:.85rem;}
+/* CPUカード表示（伏せ） */
+.place-slot.cpu-placed{background:#e8d8c8;border:1.5px solid #b09878;color:#b09878;}
+
+#place-actions{flex-shrink:0;display:flex;flex-direction:column;align-items:center;gap:5px;}
+#place-confirm{padding:10px 0;width:min(200px,70%);background:linear-gradient(135deg,var(--sp),var(--su));color:white;border:none;border-radius:22px;font-size:.86rem;font-family:'M PLUS Rounded 1c',sans-serif;font-weight:800;cursor:pointer;box-shadow:0 3px 10px var(--sh);}
+#place-confirm:disabled{opacity:.35;pointer-events:none;}
+#place-confirm:active{transform:scale(.96);}
+
+/* ── GAME ── */
+#game-screen{display:none;flex:1;overflow:hidden;flex-direction:column;padding:4px 4px calc(4px + env(safe-area-inset-bottom,0px));gap:3px;}
+.players-row{display:grid;grid-template-columns:repeat(4,1fr);gap:3px;flex-shrink:0;}
+.player-panel{background:var(--ui);border-radius:9px;padding:4px 2px 3px;border:2px solid #e8d9c8;text-align:center;box-shadow:0 1px 4px var(--sh);transition:border-color .25s,box-shadow .25s;overflow:hidden;}
+.player-panel.active-player{border-color:var(--sp);box-shadow:0 0 0 2px rgba(224,96,138,.32);}
+.pp-name{font-size:.52rem;font-weight:800;color:#666;}
+.pp-emoji{font-size:1.2rem;line-height:1.1;}
+.pp-diff{font-size:.44rem;color:#aaa;}
+.pp-score{font-size:.46rem;color:#888;margin-top:1px;}
+.item-slots{display:flex;gap:2px;margin-top:2px;justify-content:center;}
+.item-slot{width:14px;height:14px;border-radius:3px;background:#f0e8de;display:flex;align-items:center;justify-content:center;font-size:.6rem;line-height:1;position:relative;}
+.item-slot.owned{background:#ffe8b0;border:1.5px solid #e0b070;}
+.item-slot.owned::after{content:'✓';position:absolute;bottom:-1px;right:-1px;font-size:.32rem;color:#b07800;font-weight:900;background:#ffe8b0;border-radius:2px;padding:0 1px;line-height:1;}
+#turn-banner{flex-shrink:0;text-align:center;padding:5px 8px;background:var(--ui);border-radius:14px;font-size:clamp(.58rem,2.6vw,.74rem);font-weight:700;box-shadow:0 1px 4px var(--sh);min-height:26px;display:flex;align-items:center;justify-content:center;line-height:1.3;}
+
+/* CARD GRID */
+#card-grid{display:grid;grid-template-columns:repeat(8,1fr);gap:3px;flex-shrink:0;}
+.cw{cursor:pointer;aspect-ratio:1/1;position:relative;border-radius:4px;}
+.cw.removed{visibility:hidden;pointer-events:none;}
+.cw .ci{width:100%;height:100%;position:absolute;inset:0;transform-style:preserve-3d;transition:transform .3s cubic-bezier(.4,0,.2,1);}
+.cw.flipped .ci{transform:rotateY(180deg);}
+.cw:active:not(.flipped) .ci{transform:scale(.86);}
+.cw.placed-marker .cb-face{border-color:var(--sp)!important;box-shadow:inset 0 0 0 1.5px var(--sp);}
+.cf,.cb-face{position:absolute;inset:0;border-radius:4px;backface-visibility:hidden;-webkit-backface-visibility:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;}
+.cb-face{background:var(--cb);background-image:repeating-linear-gradient(45deg,rgba(255,255,255,.05) 0,rgba(255,255,255,.05) 1px,transparent 1px,transparent 6px);border:1.5px solid #3d2810;}
+.cb-icon{font-size:clamp(.65rem,2.5vw,.88rem);opacity:.4;}
+.cf{transform:rotateY(180deg);border:1.5px solid transparent;gap:0;padding:1px;}
+.cf.s-春{background:linear-gradient(150deg,var(--sp-l) 20%,#ffe8f5);border-color:var(--sp);}
+.cf.s-夏{background:linear-gradient(150deg,var(--su-l) 20%,#d8faf5);border-color:var(--su);}
+.cf.s-秋{background:linear-gradient(150deg,var(--au-l) 20%,#ffecd0);border-color:var(--au);}
+.cf.s-冬{background:linear-gradient(150deg,var(--wi-l) 20%,#ddeeff);border-color:var(--wi);}
+.cf-s{font-size:clamp(.3rem,1.3vw,.44rem);font-weight:800;padding:1px 3px;border-radius:2px;color:#fff;letter-spacing:.02em;}
+.cf-icon{font-size:clamp(1.1rem,4.8vw,1.7rem);line-height:1;}
+.cf-label{font-size:clamp(.28rem,1.15vw,.4rem);color:#333;font-weight:800;text-align:center;line-height:1.1;}
+
+/* LOG */
+#log-area{flex-shrink:0;background:var(--ui);border-radius:8px;padding:3px 7px;font-size:.54rem;color:#666;max-height:40px;overflow-y:auto;-webkit-overflow-scrolling:touch;border:1px solid #e8d9c8;box-shadow:inset 0 1px 3px var(--sh);}
+#log-area p{padding:1px 0;border-bottom:1px solid #f0e8de;line-height:1.3;}
+#log-area p:last-child{border-bottom:none;}
+
+/* GIFT TOAST */
+#gift-toast{display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-60%) scale(.7);background:white;border-radius:18px;padding:15px 20px;text-align:center;z-index:300;box-shadow:0 12px 40px rgba(0,0,0,.28);opacity:0;pointer-events:none;max-width:250px;width:80%;transition:opacity .22s,transform .22s;}
+#gift-toast.show{display:block;opacity:1;transform:translate(-50%,-50%) scale(1);}
+#gift-toast .gt-icon{font-size:1.9rem;}
+#gift-toast .gt-msg{font-size:.72rem;font-weight:700;margin-top:5px;line-height:1.5;white-space:pre-line;}
+
+/* RESULT */
+#result-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.58);z-index:200;align-items:center;justify-content:center;padding:16px;}
+#result-overlay.show{display:flex;}
+.result-box{background:white;border-radius:20px;padding:22px 18px 18px;text-align:center;width:100%;max-width:280px;box-shadow:0 16px 48px rgba(0,0,0,.3);}
+.result-box h2{font-family:'Kaisei Decol',serif;font-size:1.3rem;margin-bottom:10px;}
+.result-rankings{list-style:none;}
+.result-rankings li{padding:7px 0;font-size:.82rem;border-bottom:1px solid #eee;line-height:1.4;}
+.result-rankings li:last-child{border-bottom:none;}
+.rank-1{font-size:.9rem;font-weight:800;color:#c0800a;}
+.retry-btn{margin-top:14px;padding:12px 0;width:100%;background:linear-gradient(135deg,var(--sp),var(--au));color:white;border:none;border-radius:20px;font-size:.88rem;font-family:'M PLUS Rounded 1c',sans-serif;font-weight:800;cursor:pointer;box-shadow:0 4px 12px var(--sh);}
+.retry-btn:active{opacity:.8;}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🍀 四季のおくりもの</h1>
+  <p>グッズを3種類先に集めたプレイヤーの勝ち！</p>
+</header>
+
+<!-- SETUP -->
+<div id="setup-screen">
+  <div class="section-label">CPUの強さ</div>
+  <div class="diff-row" id="diff-row">
+    <button class="diff-btn lv1" data-lv="1"><span class="di">🐣</span>かんたん<span class="dn">記憶なし</span></button>
+    <button class="diff-btn lv2" data-lv="2"><span class="di">🦊</span>ふつう<span class="dn">記憶あり</span></button>
+    <button class="diff-btn lv3" data-lv="3"><span class="di">🧠</span>むずかしい<span class="dn">妨害あり</span></button>
+  </div>
+
+  <div class="option-row">
+    <label class="opt-label" for="opt-place">
+      置きオプション
+      <span class="opt-sub">ゲーム前に配られたカードを好きな場所に伏せて置ける</span>
+    </label>
+    <label class="toggle">
+      <input type="checkbox" id="opt-place">
+      <span class="toggle-track"></span>
+    </label>
+  </div>
+
+  <div class="rules-box">
+    <h3>📖 ゲームの流れ</h3>
+    <p>
+      春の🐻・夏の🐦・秋の🐿️・冬の🐕 をランダムに配布。<br>
+      配られた動物があなたの担当です。<br><br>
+      <span class="tag t-mine">自分の動物</span>または<span class="tag t-item">アイテム</span>が1枚目 → 続けてめくれる<br>
+      <span class="tag t-other">他の動物</span>が1枚目 → 手番終了<br><br>
+      同じ季節の <b>動物＋アイテム</b> でペア成立！<br>
+      ・自分の動物 → 自分が獲得 → 手番終了<br>
+      ・他の動物 → その子にプレゼント → <b>追加手番</b><br>
+      ※すでに持っているアイテムは獲得不可（追加手番なし）
+    </p>
+  </div>
+  <button class="start-btn" id="start-btn">カードを配る！</button>
+</div>
+
+<!-- DEAL SCREEN -->
+<div id="deal-screen">
+  <h2 id="deal-title">カードを配っています…</h2>
+  <div id="deal-card-area">
+    <div class="deal-card" id="deal-card"></div>
+  </div>
+  <div id="deal-msg"></div>
+  <button id="deal-next-btn" style="display:none">次へ →</button>
+</div>
+
+<!-- PLACE SCREEN -->
+<div id="place-screen">
+  <div id="place-banner">配られたカードをどこに置く？</div>
+  <div id="place-card-preview"></div>
+  <div id="place-grid"></div>
+  <div id="place-actions">
+    <button id="place-confirm" disabled>ここに置く！</button>
+  </div>
+</div>
+
+<!-- GAME -->
+<div id="game-screen">
+  <div class="players-row" id="players-row"></div>
+  <div id="turn-banner">準備中...</div>
+  <div id="card-grid"></div>
+  <div id="log-area"><p>ゲーム開始を待っています</p></div>
+</div>
+
+<!-- GIFT TOAST -->
+<div id="gift-toast">
+  <div class="gt-icon" id="gt-icon"></div>
+  <div class="gt-msg" id="gt-msg"></div>
+</div>
+
+<!-- RESULT -->
+<div id="result-overlay">
+  <div class="result-box">
+    <h2 id="result-title">ゲーム終了！</h2>
+    <ul class="result-rankings" id="result-rankings"></ul>
+    <button class="retry-btn" onclick="location.reload()">もう一度あそぶ</button>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════
+//  CONSTANTS
+// ══════════════════════════════════════════════
+// 動物は固定4種
+const ANIMALS   = ['🐻','🐦','🐿️','🐕'];
+const ANIMAL_JP = ['くま','とり','りす','いぬ'];
+const SEASONS   = ['春','夏','秋','冬'];
+const ITEMS     = ['🎩','👜','🎀','👓'];
+const ITEM_JP   = ['ぼうし','バッグ','リボン','メガネ'];
+const WIN_COUNT = 3;
+const TOTAL     = 32; // 動物16 + アイテム16
+
+// 配り札: 各動物の「担当季節」カード
+// 春のくま / 夏のとり / 秋のりす / 冬のいぬ
+const DEAL_SEASONS = ['春','夏','秋','冬']; // DEAL_SEASONS[i] ↔ ANIMALS[i]
+
+// ══════════════════════════════════════════════
+//  STATE
+// ══════════════════════════════════════════════
+let GS        = null;
+let cpuMem    = {};
+let cpuLevels = {};
+let globalLv  = 2;
+let usePlaceOpt = false;
+
+// 配り結果 dealResult[pid] = animalIdx
+let dealResult = {};
+// 配り札のデッキインデックス dealCardIdx[pid] = deckIdx
+let dealCardIdx = {};
+// 置きフェーズ
+let placeChosen = null; // グリッド上のスロットインデックス
+
+// ══════════════════════════════════════════════
+//  SETUP
+// ══════════════════════════════════════════════
+document.getElementById('diff-row').querySelectorAll('.diff-btn').forEach(btn=>{
+  btn.ontouchstart=()=>{};
+  btn.onclick=()=>{
+    document.querySelectorAll('.diff-btn').forEach(x=>x.classList.remove('sel'));
+    btn.classList.add('sel');
+    globalLv=parseInt(btn.dataset.lv);
+  };
+});
+document.querySelector('.diff-btn.lv2').classList.add('sel');
+document.getElementById('opt-place').onchange=e=>{ usePlaceOpt=e.target.checked; };
+document.getElementById('start-btn').onclick=()=>startDeal();
+
+// ══════════════════════════════════════════════
+//  DEAL PHASE  (配り札演出)
+// ══════════════════════════════════════════════
+function startDeal(){
+  document.getElementById('setup-screen').style.display='none';
+  document.getElementById('deal-screen').style.display='flex';
+
+  // 担当動物をランダムに割り当て（プレイヤー0=人間）
+  const order=shuffle([0,1,2,3]); // order[pid] = animalIdx
+  for(let pid=0;pid<4;pid++) dealResult[pid]=order[pid];
+
+  // CPUレベル設定
+  for(let pid=1;pid<=3;pid++){
+    if(globalLv===1) cpuLevels[pid]=1;
+    else if(globalLv===2) cpuLevels[pid]=pid===2?2:(rnd(2)===0?1:2);
+    else cpuLevels[pid]=pid===1?2:3;
+  }
+
+  // デッキを組む（配り札を含む全32枚）
+  const deck=buildDeck();
+  cpuMem={1:{},2:{},3:{}};
+
+  GS={
+    players:[0,1,2,3].map(pid=>({
+      id:pid,
+      isHuman:pid===0,
+      animalIdx:dealResult[pid],
+      items:new Set(),
+    })),
+    deck,
+    flipped:[],
+    removed:new Set(),
+    currentPlayer:0,
+    phase:'flip1',
+    locked:false,
+    placedCards:{}, // placedCards[pid] = deckIdx  配り札が置かれたデッキ位置
+  };
+
+  // 各プレイヤーの配り札のデッキインデックスを記録
+  for(let pid=0;pid<4;pid++){
+    const ai=dealResult[pid];
+    const s=DEAL_SEASONS[ai];
+    const idx=GS.deck.findIndex(c=>c.type==='animal'&&c.animalIdx===ai&&c.season===s&&!Object.values(dealCardIdx).includes(GS.deck.indexOf(c)));
+    // findIndexで重複なく探す
+    let found=-1;
+    const used=new Set(Object.values(dealCardIdx));
+    for(let i=0;i<GS.deck.length;i++){
+      if(!used.has(i)){
+        const c=GS.deck[i];
+        if(c.type==='animal'&&c.animalIdx===ai&&c.season===s){found=i;break;}
+      }
+    }
+    dealCardIdx[pid]=found;
+  }
+
+  showDealCard();
+}
+
+function buildDeck(){
+  const cards=[];
+  ANIMALS.forEach((_,ai)=>SEASONS.forEach(s=>cards.push({type:'animal',animalIdx:ai,season:s})));
+  ITEMS.forEach((_,ii)=>SEASONS.forEach(s=>cards.push({type:'item',itemIdx:ii,season:s})));
+  return shuffle(cards);
+}
+
+function showDealCard(){
+  // 人間のカードを見せる演出
+  const humanAni=dealResult[0];
+  const season=DEAL_SEASONS[humanAni];
+  const card=document.getElementById('deal-card');
+
+  document.getElementById('deal-title').textContent='あなたの担当は…';
+  card.className=`deal-card s-${season}`;
+  card.innerHTML=`
+    <span class="dc-s ls-${season}">${season}</span>
+    <span class="dc-icon">${ANIMALS[humanAni]}</span>
+    <span class="dc-label">${ANIMAL_JP[humanAni]}</span>`;
+
+  // ポップイン
+  requestAnimationFrame(()=>requestAnimationFrame(()=>card.classList.add('show')));
+
+  document.getElementById('deal-msg').innerHTML=
+    `<b>${ANIMALS[humanAni]}${ANIMAL_JP[humanAni]}</b> があなたの担当です！<br>`+
+    `（${season}の${ANIMAL_JP[humanAni]}カードが配られました）`;
+
+  const btn=document.getElementById('deal-next-btn');
+  btn.style.display='block';
+  btn.textContent=usePlaceOpt?'カードを置く場所を選ぶ →':'ゲームスタート！';
+  btn.onclick=()=>{
+    document.getElementById('deal-screen').style.display='none';
+    if(usePlaceOpt) showPlaceScreen();
+    else beginGame();
+  };
+}
+
+// ══════════════════════════════════════════════
+//  PLACE PHASE
+// ══════════════════════════════════════════════
+function showPlaceScreen(){
+  document.getElementById('place-screen').style.display='flex';
+  placeChosen=null;
+
+  // プレビュー（人間の配り札）
+  const humanAni=dealResult[0];
+  const season=DEAL_SEASONS[humanAni];
+  const prev=document.getElementById('place-card-preview');
+  prev.innerHTML=`<div class="preview-card s-${season}">
+    <span class="pc-s ls-${season}">${season}</span>
+    <span class="pc-icon">${ANIMALS[humanAni]}</span>
+    <span class="pc-label">${ANIMAL_JP[humanAni]}</span>
+  </div>`;
+
+  document.getElementById('place-banner').textContent=
+    `${ANIMALS[humanAni]}${season}の${ANIMAL_JP[humanAni]}を置く場所をタップ！`;
+
+  renderPlaceGrid();
+  document.getElementById('place-confirm').disabled=true;
+  document.getElementById('place-confirm').onclick=()=>confirmPlace();
+}
+
+function renderPlaceGrid(){
+  const grid=document.getElementById('place-grid');
+  grid.innerHTML='';
+  for(let i=0;i<TOTAL;i++){
+    const s=document.createElement('div');
+    s.className='place-slot';
+    s.dataset.slot=i;
+    s.textContent='＋';
+    s.ontouchstart=()=>{};
+    s.onclick=()=>{
+      document.querySelectorAll('.place-slot').forEach(x=>{
+        if(!x.classList.contains('cpu-placed')) x.classList.remove('slot-chosen');
+        if(!x.classList.contains('cpu-placed')) x.textContent='＋';
+      });
+      s.classList.add('slot-chosen');
+      s.textContent='📍';
+      placeChosen=i;
+      document.getElementById('place-confirm').disabled=false;
+    };
+    grid.appendChild(s);
+  }
+}
+
+function confirmPlace(){
+  if(placeChosen===null) return;
+
+  // 人間の配り札をplaceChosenスロットに移動（デッキ内スワップ）
+  const humanDeckIdx=dealCardIdx[0];
+  const slot=placeChosen;
+
+  // スワップ
+  const tmp=GS.deck[slot];
+  GS.deck[slot]=GS.deck[humanDeckIdx];
+  GS.deck[humanDeckIdx]=tmp;
+
+  // dealCardIdx更新
+  dealCardIdx[0]=slot;
+  GS.placedCards[0]=slot;
+
+  // CPUも配置（グリッド残りスロットに）
+  cpuPlace();
+
+  document.getElementById('place-screen').style.display='none';
+  beginGame();
+}
+
+function cpuPlace(){
+  // 使用済みスロット
+  const usedSlots=new Set([dealCardIdx[0]]);
+
+  for(let pid=1;pid<=3;pid++){
+    const lv=cpuLevels[pid];
+    const ai=dealResult[pid];
+    const srcIdx=dealCardIdx[pid];
+    let targetSlot;
+
+    const freeSlots=[...Array(TOTAL).keys()].filter(i=>!usedSlots.has(i));
+
+    if(lv===1){
+      // ランダム配置
+      targetSlot=freeSlots[rnd(freeSlots.length)];
+    } else if(lv===2){
+      // 中央付近（密集地帯に置く→めくられやすい）
+      const center=Math.floor(TOTAL/2);
+      freeSlots.sort((a,b)=>Math.abs(a-center)-Math.abs(b-center));
+      targetSlot=freeSlots[rnd(Math.min(3,freeSlots.length))];
+    } else {
+      // lv3: 端や角（めくられにくい→後半まで残る）
+      freeSlots.sort((a,b)=>{
+        const edgeA=Math.min(a%8, 7-a%8, Math.floor(a/8), 3-Math.floor(a/8));
+        const edgeB=Math.min(b%8, 7-b%8, Math.floor(b/8), 3-Math.floor(b/8));
+        return edgeA-edgeB;
+      });
+      targetSlot=freeSlots[rnd(Math.min(2,freeSlots.length))];
+    }
+
+    // スワップ
+    const tmp=GS.deck[targetSlot];
+    GS.deck[targetSlot]=GS.deck[srcIdx];
+    GS.deck[srcIdx]=tmp;
+
+    // 元srcIdxが既に別のCPUに使われていた場合を更新
+    for(let p2=pid+1;p2<=3;p2++){
+      if(dealCardIdx[p2]===targetSlot) dealCardIdx[p2]=srcIdx;
+    }
+    dealCardIdx[pid]=targetSlot;
+    GS.placedCards[pid]=targetSlot;
+    usedSlots.add(targetSlot);
+  }
+}
+
+// ══════════════════════════════════════════════
+//  GAME START
+// ══════════════════════════════════════════════
+function beginGame(){
+  // 置きオプションなしの場合もCPUは配置（オプションあり時はconfirmPlace内で実施済み）
+  if(usePlaceOpt){
+    // 既にcpuPlace()実行済み
+  } else {
+    // 全員分ランダム配置（置きオプションなし）
+    const usedSlots=new Set();
+    for(let pid=0;pid<4;pid++){
+      const srcIdx=dealCardIdx[pid];
+      const freeSlots=[...Array(TOTAL).keys()].filter(i=>!usedSlots.has(i)&&i!==srcIdx);
+      const targetSlot=freeSlots[rnd(freeSlots.length)];
+      const tmp=GS.deck[targetSlot];
+      GS.deck[targetSlot]=GS.deck[srcIdx];
+      GS.deck[srcIdx]=tmp;
+      for(let p2=pid+1;p2<4;p2++){
+        if(dealCardIdx[p2]===targetSlot) dealCardIdx[p2]=srcIdx;
+      }
+      dealCardIdx[pid]=targetSlot;
+      GS.placedCards[pid]=targetSlot;
+      usedSlots.add(targetSlot);
+    }
+  }
+
+  document.getElementById('game-screen').style.display='flex';
+  renderPlayers();
+  renderGrid();
+  updateBanner('あなたの番 — カードを1枚タップ！');
+}
+
+// ══════════════════════════════════════════════
+//  RENDER
+// ══════════════════════════════════════════════
+const DIFF_LABEL={1:'🐣',2:'🦊',3:'🧠'};
+
+function renderPlayers(){
+  const row=document.getElementById('players-row');
+  row.innerHTML='';
+  GS.players.forEach(p=>{
+    const d=document.createElement('div');
+    d.className='player-panel'+(GS.currentPlayer===p.id?' active-player':'');
+    d.id=`pp-${p.id}`;
+    const slots=ITEMS.map((em,ii)=>`<div class="item-slot${p.items.has(ii)?' owned':''}">${em}</div>`).join('');
+    const diffTag=p.isHuman?'':`<div class="pp-diff">${DIFF_LABEL[cpuLevels[p.id]]}</div>`;
+    d.innerHTML=`
+      <div class="pp-name">${p.isHuman?'あなた':'CPU'+p.id}</div>
+      <div class="pp-emoji">${ANIMALS[p.animalIdx]}</div>
+      ${diffTag}
+      <div class="pp-score">グッズ${p.items.size}種</div>
+      <div class="item-slots">${slots}</div>`;
+    row.appendChild(d);
+  });
+}
+
+function renderGrid(){
+  const grid=document.getElementById('card-grid');
+  grid.innerHTML='';
+
+  // 置かれたカードのスロット集合
+  const placedSet=new Set(Object.values(GS.placedCards));
+
+  GS.deck.forEach((card,idx)=>{
+    const w=document.createElement('div');
+    w.className='cw';
+    w.id=`cw-${idx}`;
+    if(GS.removed.has(idx)) w.classList.add('removed');
+    if(GS.flipped.includes(idx)) w.classList.add('flipped');
+    // 置きオプションONのときだけ人間の置きカードに赤枠を表示
+    const isHumanPlaced=usePlaceOpt&&GS.placedCards[0]===idx;
+    if(isHumanPlaced) w.classList.add('placed-marker');
+
+    const inn=document.createElement('div');inn.className='ci';
+
+    const bk=document.createElement('div');bk.className='cb-face';
+    // 置きオプションONのときだけ人間の置きカードに📍表示
+    bk.innerHTML=`<span class="cb-icon">${isHumanPlaced?'📍':'🌿'}</span>`;
+
+    const ft=document.createElement('div');
+    ft.className=`cf s-${card.season}`;
+    const icon =card.type==='animal'?ANIMALS[card.animalIdx]:ITEMS[card.itemIdx];
+    const label=card.type==='animal'?ANIMAL_JP[card.animalIdx]:ITEM_JP[card.itemIdx];
+    ft.innerHTML=`<span class="cf-s ls-${card.season}">${card.season}</span><span class="cf-icon">${icon}</span><span class="cf-label">${label}</span>`;
+
+    inn.appendChild(bk);inn.appendChild(ft);w.appendChild(inn);
+    if(!GS.removed.has(idx)) w.addEventListener('click',()=>onCardClick(idx));
+    grid.appendChild(w);
+  });
+}
+
+function flipEl(idx,up){const e=document.getElementById(`cw-${idx}`);if(e)up?e.classList.add('flipped'):e.classList.remove('flipped');}
+function removeEl(idx){const e=document.getElementById(`cw-${idx}`);if(e)e.classList.add('removed');}
+function updateBanner(msg){document.getElementById('turn-banner').textContent=msg;}
+function addLog(msg){
+  const log=document.getElementById('log-area');
+  const p=document.createElement('p');p.textContent=msg;log.prepend(p);
+  while(log.children.length>50)log.lastChild.remove();
+}
+
+// ══════════════════════════════════════════════
+//  GIFT TOAST
+// ══════════════════════════════════════════════
+function showGift(icon,msg,cb){
+  const t=document.getElementById('gift-toast');
+  document.getElementById('gt-icon').textContent=icon;
+  document.getElementById('gt-msg').textContent=msg;
+  t.classList.add('show');
+  setTimeout(()=>{t.classList.remove('show');setTimeout(cb,220);},1700);
+}
+
+// ══════════════════════════════════════════════
+//  CLICK / FLIP / EVAL
+// ══════════════════════════════════════════════
+function onCardClick(idx){
+  if(GS.locked)return;
+  if(!GS.players[GS.currentPlayer].isHuman)return;
+  if(GS.removed.has(idx)||GS.flipped.includes(idx))return;
+  handleFlip(idx);
+}
+
+function handleFlip(idx){
+  const card=GS.deck[idx];
+  GS.flipped.push(idx);
+  flipEl(idx,true);
+  for(let c=1;c<=3;c++) cpuMem[c][idx]=card;
+
+  const cur=GS.players[GS.currentPlayer];
+  const name=pName(GS.currentPlayer);
+
+  if(GS.phase==='flip1'){
+    if(card.type==='animal'&&card.animalIdx!==cur.animalIdx){
+      addLog(`${name}: ${card.season}の${ANIMAL_JP[card.animalIdx]}(${pName(ownerOf(card.animalIdx))}) → 手番終了`);
+      updateBanner('他の子の動物…手番終了');
+      GS.locked=true;
+      setTimeout(()=>{clearFlipped();nextTurn();},1800);
+    } else {
+      const desc=cardDesc(card);
+      addLog(`${name}: ${desc}をめくった`);
+      updateBanner(`${desc}！ 2枚目をタップ`);
+      GS.phase='flip2';
+    }
+  } else {
+    GS.locked=true;
+    evalPair(GS.deck[GS.flipped[0]],card,GS.flipped[0],idx);
+  }
+}
+
+function evalPair(c1,c2,i1,i2){
+  const cur=GS.players[GS.currentPlayer];
+  const name=pName(GS.currentPlayer);
+
+  let anCard=null,itCard=null,anIdx=-1,itIdx=-1;
+  if(c1.type==='animal'&&c2.type==='item'&&c1.season===c2.season){
+    anCard=c1;itCard=c2;anIdx=c1.animalIdx;itIdx=c2.itemIdx;
+  } else if(c2.type==='animal'&&c1.type==='item'&&c2.season===c1.season){
+    anCard=c2;itCard=c1;anIdx=c2.animalIdx;itIdx=c1.itemIdx;
+  }
+
+  if(anCard===null){
+    addLog(`${name}: ペア不成立 → 手番終了`);
+    updateBanner('ペアにならず…手番終了');
+    setTimeout(()=>{clearFlipped();nextTurn();},1800);
+    return;
+  }
+
+  const isOwn=anIdx===cur.animalIdx;
+  const ownerPid=isOwn?cur.id:ownerOf(anIdx);
+  const receiver=GS.players[ownerPid];
+  const rName=pName(ownerPid);
+
+  if(receiver.items.has(itIdx)){
+    addLog(`${name}: ${ANIMAL_JP[anIdx]}×${ITEM_JP[itIdx]} → ${rName}は既所持 → 手番終了`);
+    updateBanner(`${rName}はもう${ITEMS[itIdx]}を持っている！`);
+    setTimeout(()=>{clearFlipped();nextTurn();},1800);
+    return;
+  }
+
+  receiver.items.add(itIdx);
+  GS.removed.add(i1);GS.removed.add(i2);
+
+  // 置きカードが取られたらplacedCardsから削除
+  for(const [pid,di] of Object.entries(GS.placedCards)){
+    if(di===i1||di===i2) delete GS.placedCards[pid];
+  }
+
+  const isGift=ownerPid!==cur.id;
+  addLog(isGift
+    ?`🎁 ${name}: ${anCard.season}の${ANIMAL_JP[anIdx]}×${itCard.season}の${ITEM_JP[itIdx]} → ${rName}にプレゼント！`
+    :`✨ ${name}: ${anCard.season}の${ANIMAL_JP[anIdx]}×${itCard.season}の${ITEM_JP[itIdx]} → ${ITEMS[itIdx]}ゲット！`);
+
+  setTimeout(()=>{
+    removeEl(i1);removeEl(i2);
+    GS.flipped=[];GS.phase='flip1';
+    renderPlayers();
+
+    if(receiver.items.size>=WIN_COUNT){setTimeout(()=>endGame(ownerPid),400);return;}
+
+    if(isGift){
+      showGift('🎁',
+        `${ANIMALS[anIdx]}${rName}に\n${ITEMS[itIdx]}${ITEM_JP[itIdx]}をプレゼント！\nはい、どうぞ 🙌\n\n追加手番をどうぞ！`,
+        ()=>{
+          GS.locked=false;
+          if(cur.isHuman)updateBanner('追加手番！ もう1枚タップ');
+          else{updateBanner(`${name} の追加手番…`);setTimeout(cpuTurn,600);}
+        });
+    } else {
+      updateBanner(`${ITEMS[itIdx]}${ITEM_JP[itIdx]}ゲット！ 手番終了`);
+      setTimeout(()=>nextTurn(),950);
+    }
+  },920);
+}
+
+// ══════════════════════════════════════════════
+//  TURN
+// ══════════════════════════════════════════════
+function clearFlipped(){
+  GS.flipped.forEach(i=>flipEl(i,false));
+  GS.flipped=[];GS.phase='flip1';GS.locked=false;
+}
+function nextTurn(){
+  GS.currentPlayer=(GS.currentPlayer+1)%4;
+  GS.flipped=[];GS.phase='flip1';GS.locked=false;
+  renderPlayers();
+  const p=GS.players[GS.currentPlayer];
+  if(p.isHuman)updateBanner('あなたの番 — カードを1枚タップ！');
+  else{updateBanner(`${pName(GS.currentPlayer)} が考えています…`);setTimeout(cpuTurn,720);}
+}
+function ownerOf(ai){return GS.players.find(p=>p.animalIdx===ai)?.id??-1;}
+function pName(pid){return GS.players[pid].isHuman?'あなた':`CPU${pid}`;}
+function cardDesc(c){return c.type==='animal'?`${c.season}の${ANIMAL_JP[c.animalIdx]}`:`${c.season}の${ITEM_JP[c.itemIdx]}`;}
+
+// ══════════════════════════════════════════════
+//  CPU AI
+// ══════════════════════════════════════════════
+function cpuTurn(){
+  const cpu=GS.players[GS.currentPlayer];
+  if(cpu.isHuman||GS.locked)return;
+  const lv=cpuLevels[GS.currentPlayer]||2;
+  GS.locked=true;
+
+  const mem=cpuMem[GS.currentPlayer];
+  const avail=GS.deck.map((_,i)=>i).filter(i=>!GS.removed.has(i)&&!GS.flipped.includes(i));
+  const unknown=avail.filter(i=>!mem[i]);
+  const myAni=cpu.animalIdx;
+
+  // LV1: ほぼランダム
+  if(lv===1){
+    const f1=unknown.length>0?unknown[rnd(unknown.length)]:avail[rnd(avail.length)];
+    setTimeout(()=>{
+      GS.locked=false;handleFlip(f1);
+      const c1=GS.deck[f1];
+      if(c1.type==='animal'&&c1.animalIdx!==myAni)return;
+      if(GS.phase!=='flip2')return;
+      GS.locked=true;
+      const av2=GS.deck.map((_,i)=>i).filter(i=>!GS.removed.has(i)&&!GS.flipped.includes(i));
+      const unk2=av2.filter(i=>!mem[i]);
+      const f2=unk2.length>0?unk2[rnd(unk2.length)]:av2[rnd(av2.length)];
+      setTimeout(()=>{GS.locked=false;if(f2!=null)handleFlip(f2);},580);
+    },500);
+    return;
+  }
+
+  // LV2 / LV3
+  // ルール:
+  //   1枚目に既知の「他プレイヤーの動物」は絶対に選ばない（即手番終了になるため）
+  //   プレゼント先がWIN_COUNT-1個持ちの場合は、そのペアを作らない（相手を勝たせない）
+  let f1=null;
+
+  // 1枚目禁止: 既知の他プレイヤーの動物
+  const knownOtherAnimals=new Set(
+    avail.filter(i=>mem[i]?.type==='animal'&&mem[i].animalIdx!==myAni)
+  );
+
+  // ヘルパー: プレゼントしても安全か（相手がWIN_COUNT-1個持っていたら危険）
+  const safeToGift=pid=>GS.players[pid].items.size<WIN_COUNT-1;
+
+  // [A] 自分の動物 × 未所持アイテム の確実ペア（最優先）
+  const knownMine=avail.filter(i=>mem[i]?.type==='animal'&&mem[i].animalIdx===myAni);
+  outer: for(const a of knownMine){
+    const s=mem[a].season;
+    for(const j of avail){
+      if(j===a||!mem[j])continue;
+      if(mem[j].type==='item'&&mem[j].season===s&&!cpu.items.has(mem[j].itemIdx)){f1=a;break outer;}
+    }
+  }
+
+  // [B] アイテム1枚目 × 他プレイヤーの動物2枚目（プレゼント→追加手番）
+  //     ただしプレゼント先がWIN_COUNT-1個持ちの場合は絶対に選ばない
+  if(f1===null){
+    const others=GS.players.filter(p=>p.id!==cpu.id&&safeToGift(p.id))
+      .sort((a,b)=>lv===3?a.items.size-b.items.size:0);
+    outer2: for(const oth of others){
+      const knownOth=avail.filter(i=>mem[i]?.type==='animal'&&mem[i].animalIdx===oth.animalIdx);
+      for(const a of knownOth){
+        const s=mem[a].season;
+        const ki=avail.find(j=>j!==a&&mem[j]?.type==='item'&&mem[j].season===s&&!oth.items.has(mem[j].itemIdx));
+        if(ki!==undefined){f1=ki;break outer2;}
+      }
+    }
+  }
+
+  // [C] 既知アイテム1枚目（2枚目で自分の動物か安全なプレゼントが狙えるもの）
+  //     → 自分の動物との組み合わせ優先、次に安全なプレゼント先の動物
+  if(f1===null){
+    for(const ki of avail.filter(i=>mem[i]?.type==='item')){
+      const s=mem[ki].season;const ii=mem[ki].itemIdx;
+      // 自分の動物と組めるなら最優先
+      const selfMatch=avail.some(j=>j!==ki&&mem[j]?.type==='animal'&&mem[j].season===s&&mem[j].animalIdx===myAni&&!cpu.items.has(ii));
+      if(selfMatch){f1=ki;break;}
+      // 安全な相手と組めるなら次善
+      const safeMatch=avail.some(j=>j!==ki&&mem[j]?.type==='animal'&&mem[j].season===s&&
+        mem[j].animalIdx!==myAni&&
+        safeToGift(ownerOf(mem[j].animalIdx))&&
+        !GS.players[ownerOf(mem[j].animalIdx)]?.items.has(ii));
+      if(safeMatch&&f1===null){f1=ki;}
+    }
+  }
+
+  // [D] 既知の自分の動物（アイテムが未知でも手番継続できる）
+  if(f1===null&&knownMine.length>0)f1=knownMine[rnd(knownMine.length)];
+
+  // [E] ランダム（既知の他プレイヤーの動物は除外）
+  if(f1===null){
+    const safeUnknown=unknown.filter(i=>!knownOtherAnimals.has(i));
+    const safeAvail=avail.filter(i=>!knownOtherAnimals.has(i));
+    f1=safeUnknown.length>0
+      ?safeUnknown[rnd(safeUnknown.length)]
+      :safeAvail.length>0
+        ?safeAvail[rnd(safeAvail.length)]
+        :avail[rnd(avail.length)];
+  }
+
+  setTimeout(()=>{
+    GS.locked=false;handleFlip(f1);
+    const c1=GS.deck[f1];
+    if(c1.type==='animal'&&c1.animalIdx!==myAni)return;
+    if(GS.phase!=='flip2')return;
+
+    GS.locked=true;
+    const av2=GS.deck.map((_,i)=>i).filter(i=>!GS.removed.has(i)&&!GS.flipped.includes(i));
+    const s=c1.season;
+    let f2=null;
+
+    if(c1.type==='animal'){
+      // 自分の動物が1枚目 → 自分の未所持アイテムを探す
+      f2=av2.find(i=>mem[i]?.type==='item'&&mem[i].season===s&&!cpu.items.has(mem[i].itemIdx));
+      if(f2==null&&lv===3)f2=av2.find(i=>mem[i]?.type==='item'&&mem[i].season===s);
+    } else {
+      // アイテムが1枚目 → 2枚目の動物の選択
+      const ii=c1.itemIdx;
+      // 優先1: 自分の動物（自分がアイテム獲得）
+      f2=av2.find(i=>mem[i]?.type==='animal'&&mem[i].season===s&&mem[i].animalIdx===myAni);
+      // 優先2: 安全にプレゼントできる相手の動物（勝利直前でない）
+      if(f2==null){
+        f2=av2.find(i=>mem[i]?.type==='animal'&&mem[i].season===s&&
+          mem[i].animalIdx!==myAni&&
+          safeToGift(ownerOf(mem[i].animalIdx))&&
+          !GS.players[ownerOf(mem[i].animalIdx)]?.items.has(ii));
+      }
+      // 優先3: 既知だが危険な相手の動物は避けてunknownを選ぶ
+      // （危険な相手の動物しか同季節の動物が残っていない場合はunknownに賭ける）
+      if(f2==null){
+        const dangerAnimals=new Set(av2.filter(i=>
+          mem[i]?.type==='animal'&&mem[i].season===s&&!safeToGift(ownerOf(mem[i].animalIdx))
+        ));
+        const unk2=av2.filter(i=>!mem[i]);
+        f2=unk2.length>0?unk2[rnd(unk2.length)]:null;
+        // unknownも尽きた場合のみ危険なカードを仕方なく選ぶ
+        if(f2==null)f2=av2.find(i=>mem[i]?.type==='animal'&&mem[i].season===s);
+      }
+    }
+    if(f2==null){const u=av2.filter(i=>!mem[i]);f2=u.length>0?u[rnd(u.length)]:av2[rnd(av2.length)];}
+    setTimeout(()=>{GS.locked=false;if(f2!=null)handleFlip(f2);},580);
+  },500);
+}
+
+// ══════════════════════════════════════════════
+//  END
+// ══════════════════════════════════════════════
+function endGame(winnerPid){
+  const winner=GS.players[winnerPid];
+  document.getElementById('result-title').textContent=
+    winner.isHuman?'🎉 あなたの勝ち！':`${ANIMALS[winner.animalIdx]} ${pName(winnerPid)}の勝ち！`;
+  const ranked=[...GS.players].sort((a,b)=>b.items.size-a.items.size);
+  const ul=document.getElementById('result-rankings');ul.innerHTML='';
+  ['🥇','🥈','🥉','4️⃣'].forEach((m,i)=>{
+    if(!ranked[i])return;
+    const p=ranked[i];const li=document.createElement('li');
+    if(p.id===winnerPid)li.className='rank-1';
+    const got=[...p.items].map(ii=>ITEMS[ii]).join('');
+    li.textContent=`${m} ${pName(p.id)} ${ANIMALS[p.animalIdx]}  ${got||'－'}  ${p.items.size}種`;
+    ul.appendChild(li);
+  });
+  document.getElementById('result-overlay').classList.add('show');
+}
+
+// ══════════════════════════════════════════════
+//  UTILS
+// ══════════════════════════════════════════════
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=rnd(i+1);[a[i],a[j]]=[a[j],a[i]];}return a;}
+function rnd(n){return Math.floor(Math.random()*n);}
+</script>
+</body>
+</html>
