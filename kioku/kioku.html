@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>四季のきおくあわせ</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Kaisei+Decol:wght@400;700&family=M+PLUS+Rounded+1c:wght@400;700;800&display=swap');
+:root{
+  --sp:#e0608a;--su:#2a9d8f;--au:#e07b39;--wi:#4a7fb5;
+  --sp-l:#ffd6e8;--su-l:#b8f0e8;--au-l:#ffd8aa;--wi-l:#c0d8f8;
+  --bg:#fdf6ee;--cb:#5a3f2a;--text:#2d1f1f;--ui:#fff9f2;
+  --sh:rgba(80,40,20,0.15);
+  --me:#e0608a;--ai:#4a7fb5;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;overflow:hidden;}
+body{font-family:'M PLUS Rounded 1c',sans-serif;background:var(--bg);color:var(--text);display:flex;flex-direction:column;height:100dvh;}
+
+/* HEADER */
+header{flex-shrink:0;background:linear-gradient(120deg,#f9a8c9 0%,#6dd0c5 38%,#f4a261 68%,#90b8e0 100%);padding:7px 12px 5px;padding-top:calc(7px + env(safe-area-inset-top,0px));text-align:center;box-shadow:0 2px 8px var(--sh);}
+header h1{font-family:'Kaisei Decol',serif;font-size:clamp(.9rem,4vw,1.2rem);color:#fff;text-shadow:0 2px 5px rgba(0,0,0,.28);letter-spacing:.04em;}
+header p{font-size:.57rem;color:rgba(255,255,255,.9);margin-top:1px;}
+
+/* ── SETUP ── */
+#setup-screen{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;display:flex;flex-direction:column;align-items:center;gap:13px;padding:16px 14px calc(18px + env(safe-area-inset-bottom,0px));}
+.section-label{font-size:.74rem;font-weight:800;color:#666;text-align:center;}
+.record{font-size:.68rem;font-weight:800;color:var(--cb);background:white;border-radius:20px;padding:5px 16px;border:1px solid #e8d9c8;box-shadow:0 2px 5px var(--sh);}
+.diff-row{display:flex;gap:7px;width:100%;max-width:350px;}
+.diff-btn{flex:1;padding:9px 4px;border:2.5px solid #ddd;border-radius:11px;background:white;cursor:pointer;text-align:center;font-family:'M PLUS Rounded 1c',sans-serif;font-size:.68rem;font-weight:800;box-shadow:0 2px 5px var(--sh);transition:all .15s;color:#888;}
+.diff-btn:active{transform:scale(.92);}
+.diff-btn .di{font-size:1.05rem;display:block;}
+.diff-btn .dn{font-size:.55rem;color:#aaa;display:block;margin-top:2px;font-weight:400;}
+.diff-btn.lv1.sel{border-color:#82c99a;background:#f0fff4;color:#2e7d52;}
+.diff-btn.lv2.sel{border-color:var(--au);background:#fff8f0;color:#a05010;}
+.diff-btn.lv3.sel{border-color:var(--sp);background:#fff0f5;color:#9a2050;}
+.first-row{display:flex;gap:7px;width:100%;max-width:350px;}
+.first-btn{flex:1;padding:8px 4px;border:2.5px solid #ddd;border-radius:11px;background:white;cursor:pointer;text-align:center;font-family:'M PLUS Rounded 1c',sans-serif;font-size:.66rem;font-weight:800;box-shadow:0 2px 5px var(--sh);color:#888;transition:all .15s;}
+.first-btn:active{transform:scale(.92);}
+.first-btn.sel{border-color:var(--wi);background:#f0f6ff;color:#2a5a90;}
+.rules-box{background:white;border-radius:13px;padding:12px 14px;width:100%;max-width:350px;border:1px solid #e8d9c8;box-shadow:0 2px 6px var(--sh);}
+.rules-box h3{font-size:.72rem;font-weight:800;color:var(--sp);margin-bottom:6px;}
+.rules-box p{font-size:.63rem;line-height:1.7;color:#444;}
+.rules-box p+p{margin-top:5px;}
+.tag{display:inline-block;padding:1px 6px;border-radius:4px;font-size:.57rem;font-weight:800;color:white;margin:0 1px;}
+.t-me{background:var(--me);}.t-ai{background:var(--ai);}.t-win{background:#c8a000;}
+.start-btn{padding:13px 0;width:min(220px,76%);background:linear-gradient(135deg,var(--sp),var(--su));color:white;border:none;border-radius:26px;font-size:.95rem;font-family:'M PLUS Rounded 1c',sans-serif;font-weight:800;cursor:pointer;box-shadow:0 4px 14px var(--sh);}
+.start-btn:active{transform:scale(.96);}
+
+/* ── GAME ── */
+#game-screen{display:none;flex:1;overflow:hidden;flex-direction:column;align-items:center;gap:6px;padding:8px 10px calc(12px + env(safe-area-inset-bottom,0px));}
+.gametop{display:flex;align-items:stretch;gap:6px;width:100%;max-width:420px;}
+.back-btn{padding:6px 10px;border:none;border-radius:11px;background:white;box-shadow:0 2px 5px var(--sh);font-family:'M PLUS Rounded 1c',sans-serif;font-size:.62rem;font-weight:800;color:var(--cb);cursor:pointer;flex-shrink:0;}
+.back-btn:active{transform:scale(.93);}
+.side{flex:1;background:white;border-radius:11px;padding:4px 7px;box-shadow:0 2px 5px var(--sh);border:2px solid transparent;transition:border-color .2s;min-width:0;}
+.side .top{display:flex;align-items:center;font-size:.6rem;font-weight:800;}
+.side .pts{margin-left:auto;font-size:.85rem;}
+.side.p{color:var(--me);}
+.side.a{color:var(--ai);}
+.side.turn-now{border-color:currentColor;}
+.side .chips2{font-size:.56rem;color:#666;line-height:1.5;min-height:1.5em;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+#msg{width:100%;max-width:420px;text-align:center;background:var(--ui);border:1px solid #e8d9c8;border-radius:11px;padding:5px 10px;font-size:.68rem;font-weight:800;color:var(--cb);box-shadow:0 2px 5px var(--sh);min-height:1.9em;display:flex;align-items:center;justify-content:center;}
+
+#grid-wrap{flex:1;display:flex;align-items:center;justify-content:center;width:100%;min-height:0;}
+#grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;width:min(94vw,400px,calc((100dvh - 205px)*.69));transition:width .3s ease;}
+.mcard{position:relative;aspect-ratio:654/911;cursor:pointer;perspective:800px;}
+.mcard.disabled{cursor:default;pointer-events:none;}
+.mcard-inner{position:relative;width:100%;height:100%;transform-style:preserve-3d;transition:transform .5s cubic-bezier(.3,.05,.2,1);}
+.mcard.flip .mcard-inner{transform:rotateY(180deg);}
+.mcard:active .mcard-inner{transform:scale(.95) rotateY(0deg);}
+.mcard.flip:active .mcard-inner{transform:scale(.95) rotateY(180deg);}
+.mcard-face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;border-radius:10px;overflow:hidden;border:3px solid #e0d0c0;box-shadow:0 2px 6px var(--sh);background:#eee;}
+.mcard-face.back{background:linear-gradient(145deg,var(--sp-l) 0%,var(--su-l) 33%,var(--au-l) 66%,var(--wi-l) 100%);display:flex;align-items:center;justify-content:center;font-size:clamp(1.2rem,6.5vw,1.8rem);}
+.mcard-face.front{transform:rotateY(180deg);}
+.mcard-face.front img{width:100%;height:100%;object-fit:cover;display:block;}
+.chips{position:absolute;top:0;left:0;right:0;display:flex;justify-content:space-between;padding:2px;pointer-events:none;}
+.chip{font-size:.62rem;line-height:1;padding:2px 3px;border-radius:6px;background:rgba(255,255,255,.88);box-shadow:0 1px 3px rgba(0,0,0,.18);}
+.chip.c-sp{background:var(--sp-l);}.chip.c-su{background:var(--su-l);}.chip.c-au{background:var(--au-l);}.chip.c-wi{background:var(--wi-l);}
+.mark{position:absolute;bottom:2px;left:2px;width:20px;height:20px;border-radius:50%;background:rgba(255,255,255,.92);display:none;align-items:center;justify-content:center;font-size:.78rem;box-shadow:0 1px 3px rgba(0,0,0,.25);animation:stamp .25s cubic-bezier(.2,1.8,.4,1);}
+.mcard.taken-p .mark,.mcard.taken-a .mark{display:flex;}
+@keyframes stamp{from{transform:scale(2.2);opacity:0;}to{transform:scale(1);opacity:1;}}
+.mcard.taken-p .mcard-face.front{border-color:var(--me);}
+.mcard.taken-a .mcard-face.front{border-color:var(--ai);}
+.mcard.taken-p .mcard-face.front img,.mcard.taken-a .mcard-face.front img{opacity:.9;}
+.mcard.hit .mcard-face.front{animation:winpulse .5s ease-in-out 2;}
+@keyframes winpulse{from{box-shadow:0 0 6px 2px rgba(240,184,64,.7);}50%{box-shadow:0 0 14px 5px rgba(240,184,64,1);}to{box-shadow:0 2px 6px var(--sh);}}
+.mcard.miss .mcard-face.front{animation:shake .4s;}
+@keyframes shake{0%,100%{transform:rotateY(180deg) translateX(0);}25%{transform:rotateY(180deg) translateX(-4px);}75%{transform:rotateY(180deg) translateX(4px);}}
+
+/* ── RESULT ── */
+#result-overlay{display:none;position:fixed;inset:0;z-index:50;align-items:flex-end;justify-content:center;pointer-events:none;}
+#result-overlay.show{display:flex;}
+.result-card{background:var(--ui);border-radius:20px 20px 0 0;padding:12px 16px calc(12px + env(safe-area-inset-bottom,0px));max-width:420px;width:100%;text-align:center;box-shadow:0 -6px 24px rgba(0,0,0,.28);animation:slideup .35s cubic-bezier(.2,1,.4,1);max-height:250px;overflow-y:auto;pointer-events:auto;}
+@keyframes slideup{from{transform:translateY(100%);}to{transform:translateY(0);}}
+#game-screen.sheet-open #grid{width:min(94vw,400px,calc((100dvh - 205px - 265px)*.69));}
+.result-card h2{font-family:'Kaisei Decol',serif;font-size:1.25rem;margin-bottom:4px;}
+.result-card h2.win{color:var(--sp);}
+.result-card h2.lose{color:var(--wi);}
+.result-card h2.draw{color:#888;}
+.result-card .why{font-size:.66rem;color:#888;font-weight:700;margin-bottom:8px;}
+.bd-wrap{display:flex;gap:8px;margin-bottom:10px;}
+.bd{flex:1;background:white;border-radius:12px;padding:8px 7px;border:2px solid #eee;text-align:left;}
+.bd.bp{border-color:var(--sp-l);}
+.bd.ba{border-color:var(--wi-l);}
+.bd .bd-head{font-size:.66rem;font-weight:800;display:flex;margin-bottom:4px;}
+.bd.bp .bd-head{color:var(--me);}
+.bd.ba .bd-head{color:var(--ai);}
+.bd .bd-total{margin-left:auto;font-size:.82rem;}
+.bd .li{font-size:.58rem;color:#555;font-weight:700;line-height:1.6;}
+.result-card .rec2{font-size:.64rem;color:#999;font-weight:700;margin-bottom:12px;}
+.result-btns{display:flex;gap:8px;justify-content:center;}
+.cbtn{padding:11px 14px;border:none;border-radius:22px;font-family:'M PLUS Rounded 1c',sans-serif;font-size:.74rem;font-weight:800;cursor:pointer;box-shadow:0 3px 10px var(--sh);}
+.cbtn:active{transform:scale(.94);}
+.cbtn.primary{background:linear-gradient(135deg,var(--sp),var(--au));color:white;flex:1;}
+.cbtn.ghost{background:white;color:var(--cb);}
+
+.confetti{position:fixed;top:-30px;z-index:60;font-size:1.2rem;pointer-events:none;animation:fall linear forwards;}
+@keyframes fall{to{transform:translateY(110dvh) rotate(540deg);opacity:.7;}}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🍀 四季のきおくあわせ</h1>
+  <p>2まいめくって、おなじ動物か おなじ季節を見つけよう</p>
+</header>
+
+<!-- せってい画面 -->
+<div id="setup-screen">
+  <div class="record" id="record-label">せいせき：0勝 0敗 0分</div>
+
+  <div class="section-label">🤖 あいての記憶力</div>
+  <div class="diff-row">
+    <button class="diff-btn lv1" id="lv1" onclick="setLevel(1)"><span class="di">🐣</span>よちよち<span class="dn">ほとんど覚えてない</span></button>
+    <button class="diff-btn lv2" id="lv2" onclick="setLevel(2)"><span class="di">🦊</span>ふつう<span class="dn">そこそこ覚える</span></button>
+    <button class="diff-btn lv3" id="lv3" onclick="setLevel(3)"><span class="di">🐲</span>めちゃつよ<span class="dn">ほぼ完ぺきに記憶</span></button>
+  </div>
+
+  <div class="section-label">🎬 どちらが先？</div>
+  <div class="first-row">
+    <button class="first-btn" id="fp" onclick="setFirst('p')">😊 あなたから</button>
+    <button class="first-btn" id="fa" onclick="setFirst('a')">🤖 AIから</button>
+    <button class="first-btn" id="fr" onclick="setFirst('r')">🎲 ランダム</button>
+  </div>
+
+  <div class="rules-box">
+    <h3>📖 あそびかた</h3>
+    <p>① 16まいのカードが裏返しで並ぶよ。<span class="t-me tag">あなた</span>と<span class="t-ai tag">AI</span>で こうたいに2まいずつめくるよ。</p>
+    <p>② めくった2まいが「<b>おなじ動物</b>」か「<b>おなじ季節</b>」なら マッチ成立！そのカードはもらえて、もう1回めくれるよ（ボーナスターン）。</p>
+    <p>③ マッチしなかったら 2まいとも裏返しに戻って、あいての番になるよ。どこに何があったか よく覚えておこう！</p>
+    <p>④ 16まいぜんぶマッチしたら終了。マッチした数（組）が多いほうの<span class="t-win tag">勝ち！</span></p>
+  </div>
+
+  <button class="start-btn" onclick="startGame()">▶ あそぶ！</button>
+</div>
+
+<!-- ゲーム画面 -->
+<div id="game-screen">
+  <div class="gametop">
+    <button class="back-btn" onclick="quitGame()">← やめる</button>
+    <div class="side p" id="side-p"><div class="top">😊 あなた<span class="pts" id="pts-p">0組</span></div><div class="chips2" id="chips-p"></div></div>
+    <div class="side a" id="side-a"><div class="top">🤖 AI<span class="pts" id="pts-a">0組</span></div><div class="chips2" id="chips-a"></div></div>
+  </div>
+  <div id="msg"></div>
+  <div id="grid-wrap"><div id="grid"></div></div>
+</div>
+
+<!-- けっか画面 -->
+<div id="result-overlay">
+  <div class="result-card">
+    <h2 id="result-title"></h2>
+    <div class="why" id="result-why"></div>
+    <div class="bd-wrap">
+      <div class="bd bp"><div class="bd-head">😊 あなた<span class="bd-total" id="bd-total-p"></span></div><div id="bd-list-p"></div></div>
+      <div class="bd ba"><div class="bd-head">🤖 AI<span class="bd-total" id="bd-total-a"></span></div><div id="bd-list-a"></div></div>
+    </div>
+    <div class="rec2" id="result-record"></div>
+    <div class="result-btns">
+      <button class="cbtn ghost" onclick="quitGame()">⚙ せってい</button>
+      <button class="cbtn primary" onclick="startGame()">もういちど！</button>
+    </div>
+  </div>
+</div>
+
+<script>
+'use strict';
+// ── データ ──
+const ANIMALS=[
+  {id:1,n:'アヒル',i:'🦆'},
+  {id:2,n:'クマ',i:'🐻'},
+  {id:3,n:'リス',i:'🐿️'},
+  {id:4,n:'ウサギ',i:'🐰'}
+];
+const SEASONS=[
+  {id:1,n:'はる',i:'🌸',cls:'sp'},
+  {id:2,n:'なつ',i:'🌊',cls:'su'},
+  {id:3,n:'あき',i:'🍁',cls:'au'},
+  {id:4,n:'ふゆ',i:'⛄',cls:'wi'}
+];
+const imgSrc=(a,s)=>`../イラスト/${a}-${s}.jpg`;
+
+// ── せいせきの保存 ──
+const SAVE_KEY='marufu_kioku_v1';
+let rec={w:0,l:0,d:0};
+try{rec=JSON.parse(localStorage.getItem(SAVE_KEY))||rec;}catch(e){}
+function persist(){try{localStorage.setItem(SAVE_KEY,JSON.stringify(rec));}catch(e){}}
+function recText(){return `せいせき：${rec.w}勝 ${rec.l}敗 ${rec.d}分`;}
+document.getElementById('record-label').textContent=recText();
+
+// ── せってい ──
+let level=2, firstOpt='r';
+const RECALL_P=[0,0.25,0.65,0.97]; // 記憶力（レベル1〜3のカードを覚えている確率）
+function setLevel(v){
+  level=v;
+  for(const n of [1,2,3])document.getElementById('lv'+n).classList.toggle('sel',n===v);
+}
+function setFirst(v){
+  firstOpt=v;
+  document.getElementById('fp').classList.toggle('sel',v==='p');
+  document.getElementById('fa').classList.toggle('sel',v==='a');
+  document.getElementById('fr').classList.toggle('sel',v==='r');
+}
+setLevel(2);setFirst('r');
+
+// ── ゲームの状態 ──
+let board=[];             // 16まいのカード
+let takenBy=[];           // null / 'p' / 'a'
+let faceUp=[];            // 今めくれているか
+let flippedNow=[];        // このターンでめくった場所（0〜2こ）
+let pairsWon=[];          // {side,i,j} マッチした組の記録
+let turn='p';
+let second='a';
+let over=false;
+let busy=false;           // 判定中はタップを受け付けない
+let known=new Set();      // AIが覚えているカードの場所
+let cardEls=[];
+
+function matches(i,j){ return board[i].a===board[j].a || board[i].s===board[j].s; }
+
+function shuffleBoard(){
+  board=[];
+  for(const an of ANIMALS)for(const se of SEASONS)board.push({a:an.id,s:se.id});
+  for(let i=board.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [board[i],board[j]]=[board[j],board[i]];
+  }
+}
+
+// ── ゲーム開始 ──
+function startGame(){
+  shuffleBoard();
+  takenBy=new Array(16).fill(null);
+  faceUp=new Array(16).fill(false);
+  flippedNow=[]; pairsWon=[]; known=new Set();
+  over=false; busy=false;
+  turn=firstOpt==='r'?(Math.random()<.5?'p':'a'):firstOpt;
+  second=turn==='p'?'a':'p';
+
+  const grid=document.getElementById('grid');
+  grid.innerHTML='';
+  cardEls=[];
+  board.forEach((cd,i)=>{
+    const an=ANIMALS.find(x=>x.id===cd.a),se=SEASONS.find(x=>x.id===cd.s);
+    const el=document.createElement('div');
+    el.className='mcard';
+    el.innerHTML=`<div class="mcard-inner">
+        <div class="mcard-face back">🍀</div>
+        <div class="mcard-face front">
+          <img src="${imgSrc(cd.a,cd.s)}" alt="${an.n}の${se.n}">
+          <div class="chips"><span class="chip c-${se.cls}">${se.i}</span><span class="chip">${an.i}</span></div>
+          <div class="mark"></div>
+        </div>
+      </div>`;
+    el.onclick=()=>tapCard(i);
+    grid.appendChild(el);
+    cardEls.push(el);
+  });
+
+  document.getElementById('setup-screen').style.display='none';
+  document.getElementById('result-overlay').classList.remove('show');
+  document.getElementById('game-screen').classList.remove('sheet-open');
+  document.getElementById('game-screen').style.display='flex';
+  render();
+  if(turn==='a')setTimeout(aiTurn,700);
+}
+
+function chipsText(side){
+  const cnt={};
+  pairsWon.filter(p=>p.side===side).forEach(p=>{
+    const an=ANIMALS.find(x=>x.id===board[p.i].a);
+    cnt[an.i]=(cnt[an.i]||0)+1;
+  });
+  const parts=Object.entries(cnt).map(([icon,n])=>icon+'×'+n);
+  return parts.join(' ')||'（まだなし）';
+}
+
+function render(){
+  cardEls.forEach((el,i)=>{
+    el.classList.toggle('flip', faceUp[i]);
+    el.classList.toggle('taken-p', takenBy[i]==='p');
+    el.classList.toggle('taken-a', takenBy[i]==='a');
+    el.classList.toggle('disabled', !!takenBy[i] || busy || (!over&&turn!=='p'));
+    el.querySelector('.mark').textContent = takenBy[i]==='p'?'⭐':takenBy[i]==='a'?'🤖':'';
+  });
+  document.getElementById('pts-p').textContent=pairsWon.filter(p=>p.side==='p').length+'組';
+  document.getElementById('pts-a').textContent=pairsWon.filter(p=>p.side==='a').length+'組';
+  document.getElementById('chips-p').textContent=chipsText('p');
+  document.getElementById('chips-a').textContent=chipsText('a');
+  document.getElementById('side-p').classList.toggle('turn-now',!over&&turn==='p');
+  document.getElementById('side-a').classList.toggle('turn-now',!over&&turn==='a');
+  if(over)return;
+  const msg=document.getElementById('msg');
+  if(busy){ /* 判定中はメッセージそのまま */ }
+  else if(turn==='p') msg.textContent = flippedNow.length===0?'😊 あなたの番！1まいめくってね':'😊 もう1まいめくってね';
+  else msg.textContent='🤖 AIが かんがえちゅう…';
+}
+
+// AIの記憶に、いま見えたカードを（確率で）登録する
+function remember(i){
+  if(Math.random() < RECALL_P[level]) known.add(i);
+}
+
+// ── 人間の操作 ──
+function tapCard(i){
+  if(over||busy||turn!=='p')return;
+  if(takenBy[i]||faceUp[i])return;
+  flipUp(i);
+  flippedNow.push(i);
+  render();
+  if(flippedNow.length===2) resolveMatch('p');
+}
+
+function flipUp(i){
+  faceUp[i]=true;
+  if(level>=2) remember(i);
+}
+
+// ── 判定 ──
+function resolveMatch(side){
+  busy=true;
+  render();
+  const [i,j]=flippedNow;
+  const isHit=matches(i,j);
+  setTimeout(()=>{
+    if(isHit){
+      cardEls[i].classList.add('hit'); cardEls[j].classList.add('hit');
+      takenBy[i]=side; takenBy[j]=side;
+      pairsWon.push({side,i,j});
+      flippedNow=[];
+      busy=false;
+      render();
+      if(checkGameEnd())return;
+      const msg=document.getElementById('msg');
+      msg.textContent = side==='p' ? '🎉 マッチ！もう1回どうぞ' : '🤖 AIがマッチ！つづけて…';
+      if(side==='a') setTimeout(aiTurn,900);
+    }else{
+      cardEls[i].classList.add('miss'); cardEls[j].classList.add('miss');
+      setTimeout(()=>{
+        faceUp[i]=false; faceUp[j]=false;
+        cardEls[i].classList.remove('miss'); cardEls[j].classList.remove('miss');
+        flippedNow=[];
+        turn = side==='p' ? 'a' : 'p';
+        busy=false;
+        render();
+        if(turn==='a') setTimeout(aiTurn,700);
+      },450);
+    }
+  },800);
+}
+
+function checkGameEnd(){
+  const remaining=[...Array(16).keys()].filter(i=>!takenBy[i]);
+  if(remaining.length===0){ endGame([]); return true; }
+  let anyPair=false;
+  outer: for(let x=0;x<remaining.length;x++)for(let y=x+1;y<remaining.length;y++){
+    if(matches(remaining[x],remaining[y])){anyPair=true;break outer;}
+  }
+  if(!anyPair){ endGame(remaining); return true; } // どうやっても揃わない、あまりで終了
+  return false;
+}
+
+// ── AIの思考 ──
+function aiRemainingKnown(){
+  return [...known].filter(i=>!takenBy[i]&&!faceUp[i]);
+}
+function aiPickFirst(){
+  const remaining=[...Array(16).keys()].filter(i=>!takenBy[i]&&!faceUp[i]);
+  if(level>=2){
+    const kr=aiRemainingKnown();
+    for(let x=0;x<kr.length;x++)for(let y=x+1;y<kr.length;y++){
+      if(matches(kr[x],kr[y])) return {first:kr[x], second:kr[y]};
+    }
+  }
+  const unknown=level>=2?remaining.filter(i=>!known.has(i)):remaining;
+  const pool=unknown.length?unknown:remaining;
+  return {first:pool[Math.floor(Math.random()*pool.length)], second:null};
+}
+function aiPickSecond(first){
+  const remaining=[...Array(16).keys()].filter(i=>!takenBy[i]&&!faceUp[i]&&i!==first);
+  if(level>=2){
+    const kr=aiRemainingKnown().filter(i=>i!==first);
+    for(const j of kr) if(matches(first,j)) return j;
+  }
+  const unknown=level>=2?remaining.filter(i=>!known.has(i)):remaining;
+  const pool=unknown.length?unknown:remaining;
+  return pool[Math.floor(Math.random()*pool.length)];
+}
+
+function aiTurn(){
+  if(over||turn!=='a'||busy)return;
+  busy=true;
+  render();
+  setTimeout(()=>{
+    const {first,second}=aiPickFirst();
+    flipUp(first); flippedNow=[first]; render();
+    setTimeout(()=>{
+      const j = second!=null ? second : aiPickSecond(first);
+      flipUp(j); flippedNow=[first,j]; render();
+      busy=false;
+      resolveMatch('a');
+    },700);
+  },500);
+}
+
+// ── けっか ──
+function endGame(leftover){
+  over=true;
+  leftover.forEach(i=>{ faceUp[i]=true; });
+  render();
+
+  const sp=pairsWon.filter(p=>p.side==='p').length;
+  const sa=pairsWon.filter(p=>p.side==='a').length;
+  const title=document.getElementById('result-title');
+  let winner=null;
+  if(sp>sa){winner='p';rec.w++;title.textContent='🎉 あなたの勝ち！';title.className='win';}
+  else if(sa>sp){winner='a';rec.l++;title.textContent='😢 AIの勝ち…';title.className='lose';}
+  else{rec.d++;title.textContent='🤝 ひきわけ！';title.className='draw';}
+  persist();
+
+  document.getElementById('result-why').textContent =
+    leftover.length ? `どうしても組にならないカードが${leftover.length}まい残ったよ` : '16まいぜんぶマッチしたよ！';
+  document.getElementById('msg').textContent = winner==='p'?'🎉 あなたの勝ち！':winner==='a'?'😢 AIの勝ち…':'🤝 ひきわけ！';
+
+  document.getElementById('bd-total-p').textContent=sp+'組';
+  document.getElementById('bd-total-a').textContent=sa+'組';
+  const conf=[['p','bd-list-p'],['a','bd-list-a']];
+  for(const [side,listId] of conf){
+    const box=document.getElementById(listId);
+    box.innerHTML='';
+    const mine=pairsWon.filter(p=>p.side===side);
+    if(!mine.length){
+      const d=document.createElement('div'); d.className='li'; d.textContent='（組なし）'; box.appendChild(d);
+    }else{
+      mine.forEach(p=>{
+        const A1=ANIMALS.find(x=>x.id===board[p.i].a), S1=SEASONS.find(x=>x.id===board[p.i].s);
+        const A2=ANIMALS.find(x=>x.id===board[p.j].a), S2=SEASONS.find(x=>x.id===board[p.j].s);
+        const d=document.createElement('div'); d.className='li';
+        d.textContent=`${A1.i}${S1.i} + ${A2.i}${S2.i}`;
+        box.appendChild(d);
+      });
+    }
+  }
+  document.getElementById('result-record').textContent=recText();
+  document.getElementById('record-label').textContent=recText();
+
+  setTimeout(()=>{
+    document.getElementById('result-overlay').classList.add('show');
+    document.getElementById('game-screen').classList.add('sheet-open');
+    if(winner==='p')confetti();
+  },900);
+}
+
+function confetti(){
+  const emo=['🌸','🌊','🍁','⛄','⭐','🍀','🎀'];
+  for(let i=0;i<26;i++){
+    const c=document.createElement('div');
+    c.className='confetti';
+    c.textContent=emo[Math.floor(Math.random()*emo.length)];
+    c.style.left=Math.random()*100+'vw';
+    c.style.animationDuration=(2+Math.random()*2.5)+'s';
+    c.style.animationDelay=(Math.random()*.8)+'s';
+    document.body.appendChild(c);
+    setTimeout(()=>c.remove(),5500);
+  }
+}
+
+function quitGame(){
+  over=true;
+  document.getElementById('result-overlay').classList.remove('show');
+  document.getElementById('game-screen').classList.remove('sheet-open');
+  document.getElementById('game-screen').style.display='none';
+  document.getElementById('setup-screen').style.display='flex';
+}
+</script>
+</body>
+</html>

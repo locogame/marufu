@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>四季つなぎ</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Kaisei+Decol:wght@400;700&family=M+PLUS+Rounded+1c:wght@400;700;800&display=swap');
+:root{
+  --sp:#e0608a;--su:#2a9d8f;--au:#e07b39;--wi:#4a7fb5;
+  --sp-l:#ffd6e8;--su-l:#b8f0e8;--au-l:#ffd8aa;--wi-l:#c0d8f8;
+  --bg:#fdf6ee;--cb:#5a3f2a;--text:#2d1f1f;--ui:#fff9f2;
+  --sh:rgba(80,40,20,0.15);
+  --me:#e0608a;--ai:#4a7fb5;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;overflow:hidden;}
+body{font-family:'M PLUS Rounded 1c',sans-serif;background:var(--bg);color:var(--text);display:flex;flex-direction:column;height:100dvh;}
+
+/* HEADER */
+header{flex-shrink:0;background:linear-gradient(120deg,#f9a8c9 0%,#6dd0c5 38%,#f4a261 68%,#90b8e0 100%);padding:7px 12px 5px;padding-top:calc(7px + env(safe-area-inset-top,0px));text-align:center;box-shadow:0 2px 8px var(--sh);}
+header h1{font-family:'Kaisei Decol',serif;font-size:clamp(.9rem,4vw,1.2rem);color:#fff;text-shadow:0 2px 5px rgba(0,0,0,.28);letter-spacing:.04em;}
+header p{font-size:.57rem;color:rgba(255,255,255,.9);margin-top:1px;}
+
+/* ── SETUP ── */
+#setup-screen{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;display:flex;flex-direction:column;align-items:center;gap:13px;padding:16px 14px calc(18px + env(safe-area-inset-bottom,0px));}
+.section-label{font-size:.74rem;font-weight:800;color:#666;text-align:center;}
+.record{font-size:.68rem;font-weight:800;color:var(--cb);background:white;border-radius:20px;padding:5px 16px;border:1px solid #e8d9c8;box-shadow:0 2px 5px var(--sh);}
+.diff-row{display:flex;gap:7px;width:100%;max-width:350px;}
+.diff-btn{flex:1;padding:9px 4px;border:2.5px solid #ddd;border-radius:11px;background:white;cursor:pointer;text-align:center;font-family:'M PLUS Rounded 1c',sans-serif;font-size:.68rem;font-weight:800;box-shadow:0 2px 5px var(--sh);transition:all .15s;color:#888;}
+.diff-btn:active{transform:scale(.92);}
+.diff-btn .di{font-size:1.05rem;display:block;}
+.diff-btn .dn{font-size:.55rem;color:#aaa;display:block;margin-top:2px;font-weight:400;}
+.diff-btn.lv1.sel{border-color:#82c99a;background:#f0fff4;color:#2e7d52;}
+.diff-btn.lv2.sel{border-color:var(--au);background:#fff8f0;color:#a05010;}
+.diff-btn.lv3.sel{border-color:var(--sp);background:#fff0f5;color:#9a2050;}
+.first-row{display:flex;gap:7px;width:100%;max-width:350px;}
+.first-btn{flex:1;padding:8px 4px;border:2.5px solid #ddd;border-radius:11px;background:white;cursor:pointer;text-align:center;font-family:'M PLUS Rounded 1c',sans-serif;font-size:.66rem;font-weight:800;box-shadow:0 2px 5px var(--sh);color:#888;transition:all .15s;}
+.first-btn:active{transform:scale(.92);}
+.first-btn.sel{border-color:var(--wi);background:#f0f6ff;color:#2a5a90;}
+.rules-box{background:white;border-radius:13px;padding:12px 14px;width:100%;max-width:350px;border:1px solid #e8d9c8;box-shadow:0 2px 6px var(--sh);}
+.rules-box h3{font-size:.72rem;font-weight:800;color:var(--sp);margin-bottom:6px;}
+.rules-box p{font-size:.63rem;line-height:1.7;color:#444;}
+.rules-box p+p{margin-top:5px;}
+.score-table{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-top:6px;}
+.score-cell{background:#fdf3e0;border-radius:9px;padding:5px 3px;text-align:center;font-size:.58rem;font-weight:800;color:var(--cb);}
+.score-cell b{display:block;font-size:.8rem;color:var(--au);}
+.tag{display:inline-block;padding:1px 6px;border-radius:4px;font-size:.57rem;font-weight:800;color:white;margin:0 1px;}
+.t-me{background:var(--me);}.t-ai{background:var(--ai);}.t-win{background:#c8a000;}
+.start-btn{padding:13px 0;width:min(220px,76%);background:linear-gradient(135deg,var(--sp),var(--su));color:white;border:none;border-radius:26px;font-size:.95rem;font-family:'M PLUS Rounded 1c',sans-serif;font-weight:800;cursor:pointer;box-shadow:0 4px 14px var(--sh);}
+.start-btn:active{transform:scale(.96);}
+
+/* ── GAME ── */
+#game-screen{display:none;flex:1;overflow:hidden;flex-direction:column;align-items:center;gap:6px;padding:8px 10px calc(12px + env(safe-area-inset-bottom,0px));}
+.gametop{display:flex;align-items:stretch;gap:6px;width:100%;max-width:420px;}
+.back-btn{padding:6px 10px;border:none;border-radius:11px;background:white;box-shadow:0 2px 5px var(--sh);font-family:'M PLUS Rounded 1c',sans-serif;font-size:.62rem;font-weight:800;color:var(--cb);cursor:pointer;flex-shrink:0;}
+.back-btn:active{transform:scale(.93);}
+.side{flex:1;background:white;border-radius:11px;padding:4px 7px;box-shadow:0 2px 5px var(--sh);border:2px solid transparent;transition:border-color .2s;min-width:0;}
+.side .top{display:flex;align-items:center;font-size:.6rem;font-weight:800;}
+.side .pts{margin-left:auto;font-size:.85rem;}
+.side.p{color:var(--me);}
+.side.a{color:var(--ai);}
+.side.turn-now{border-color:currentColor;}
+#msg{width:100%;max-width:420px;text-align:center;background:var(--ui);border:1px solid #e8d9c8;border-radius:11px;padding:5px 10px;font-size:.68rem;font-weight:800;color:var(--cb);box-shadow:0 2px 5px var(--sh);min-height:1.9em;display:flex;align-items:center;justify-content:center;}
+
+/* 一筆書きの並びを、順番のわかる帯としても見せる */
+#chain-row{display:flex;gap:6px;width:100%;max-width:420px;}
+.chain-box{flex:1;display:flex;align-items:center;gap:2px;overflow-x:auto;background:white;border-radius:9px;padding:3px 6px;box-shadow:0 2px 5px var(--sh);min-height:26px;border:1.5px solid transparent;-webkit-overflow-scrolling:touch;}
+.chain-box.cp{border-color:var(--sp-l);}
+.chain-box.ca{border-color:var(--wi-l);}
+.chain-box img{width:16px;height:22px;object-fit:cover;border-radius:3px;border:1px solid rgba(0,0,0,.18);flex-shrink:0;}
+.chain-box .arrow{flex-shrink:0;font-size:.58rem;color:#bbb;font-weight:800;}
+.chain-box .empty{font-size:.55rem;color:#bbb;font-weight:700;white-space:nowrap;}
+
+/* シートを出すときは #grid-wrap 自体の「使える場所」を padding-bottom で
+   ほんとうに減らす。#grid の上限だけ計算しても、まわりの入れ物が縮んでいないと
+   まんなかぞろえの結果、盤面がシートの裏に入りこんでしまうため。 */
+#grid-wrap{flex:1;display:flex;align-items:center;justify-content:center;width:100%;min-height:0;box-sizing:border-box;padding-bottom:0;transition:padding-bottom .3s ease;}
+#game-screen.sheet-open #grid-wrap{padding-bottom:250px;}
+#grid{position:relative;display:grid;grid-template-columns:repeat(4,1fr);gap:6px;
+  width:auto;height:auto;min-width:0;min-height:0;
+  max-width:min(94vw,400px);max-height:100%;
+  aspect-ratio:654/911;}
+#chain-svg{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;overflow:visible;z-index:3;}
+#chain-svg path{fill:none;stroke-linecap:round;stroke-linejoin:round;filter:drop-shadow(0 1px 2px rgba(0,0,0,.35));}
+.card{position:relative;min-width:0;min-height:0;aspect-ratio:654/911;border-radius:10px;overflow:hidden;border:3px solid #e0d0c0;background:#eee;box-shadow:0 2px 6px var(--sh);transition:transform .15s,border-color .2s,box-shadow .2s;}
+.card img{width:100%;height:100%;object-fit:cover;display:block;}
+.chips{position:absolute;top:0;left:0;right:0;display:flex;justify-content:space-between;padding:2px;pointer-events:none;}
+.chip{font-size:.62rem;line-height:1;padding:2px 3px;border-radius:6px;background:rgba(255,255,255,.88);box-shadow:0 1px 3px rgba(0,0,0,.18);}
+.chip.c-sp{background:var(--sp-l);}.chip.c-su{background:var(--su-l);}.chip.c-au{background:var(--au-l);}.chip.c-wi{background:var(--wi-l);}
+
+.card.valid{border-color:#f0b840;cursor:pointer;animation:glow 1.1s ease-in-out infinite;}
+@keyframes glow{0%,100%{box-shadow:0 0 4px 1px rgba(240,184,64,.55);}50%{box-shadow:0 0 12px 4px rgba(240,184,64,.85);}}
+.card.valid:active{transform:scale(.93);}
+.card.taken-p{border-color:var(--me);}
+.card.taken-a{border-color:var(--ai);}
+.card.taken-p img,.card.taken-a img{opacity:.9;}
+.mark{position:absolute;bottom:2px;left:2px;width:20px;height:20px;border-radius:50%;background:rgba(255,255,255,.92);display:none;align-items:center;justify-content:center;font-size:.78rem;box-shadow:0 1px 3px rgba(0,0,0,.25);animation:stamp .25s cubic-bezier(.2,1.8,.4,1);}
+.card.taken-p .mark,.card.taken-a .mark{display:flex;}
+@keyframes stamp{from{transform:scale(2.2);opacity:0;}to{transform:scale(1);opacity:1;}}
+.card.last::after{content:'📍';position:absolute;top:-6px;left:50%;transform:translateX(-50%);font-size:.85rem;animation:bob .7s ease-in-out infinite alternate;filter:drop-shadow(0 2px 2px rgba(0,0,0,.3));}
+@keyframes bob{from{transform:translateX(-50%) translateY(0);}to{transform:translateX(-50%) translateY(-3px);}}
+.card.scored{border-color:#f0b840;animation:winpulse .6s ease-in-out infinite alternate;z-index:2;}
+@keyframes winpulse{from{box-shadow:0 0 6px 2px rgba(240,184,64,.7);}to{box-shadow:0 0 14px 5px rgba(240,184,64,1);}}
+.chainnum{position:absolute;bottom:2px;right:2px;min-width:16px;height:16px;padding:0 3px;border-radius:8px;font-size:.6rem;font-weight:800;display:none;align-items:center;justify-content:center;box-shadow:0 1px 3px rgba(0,0,0,.3);}
+.chainnum.on{display:flex;}
+.chainnum.side-p{background:var(--sp);color:white;}
+.chainnum.side-a{background:var(--ai);color:white;}
+
+/* ── RESULT ── */
+/* 盤面が見えたままになるよう、画面ぜんぶをおおう真っ暗な幕はやめて
+   下からせり上がる「シート」だけを出す。ボードの光っているカードはそのまま見える。 */
+#result-overlay{display:none;position:fixed;inset:0;z-index:50;align-items:flex-end;justify-content:center;pointer-events:none;}
+#result-overlay.show{display:flex;}
+.result-card{background:var(--ui);border-radius:20px 20px 0 0;padding:12px 16px calc(12px + env(safe-area-inset-bottom,0px));max-width:420px;width:100%;text-align:center;box-shadow:0 -6px 24px rgba(0,0,0,.28);animation:slideup .35s cubic-bezier(.2,1,.4,1);max-height:240px;overflow-y:auto;pointer-events:auto;}
+@keyframes slideup{from{transform:translateY(100%);}to{transform:translateY(0);}}
+.result-card h2{font-family:'Kaisei Decol',serif;font-size:1.25rem;margin-bottom:4px;}
+.result-card h2.win{color:var(--sp);}
+.result-card h2.lose{color:var(--wi);}
+.result-card h2.draw{color:#888;}
+.result-card .why{font-size:.66rem;color:#888;font-weight:700;margin-bottom:8px;}
+.bd-wrap{display:flex;gap:8px;margin-bottom:10px;}
+.bd{flex:1;background:white;border-radius:12px;padding:8px 7px;border:2px solid #eee;text-align:left;}
+.bd.bp{border-color:var(--sp-l);}
+.bd.ba{border-color:var(--wi-l);}
+.bd .bd-head{font-size:.66rem;font-weight:800;display:flex;margin-bottom:4px;}
+.bd.bp .bd-head{color:var(--me);}
+.bd.ba .bd-head{color:var(--ai);}
+.bd .bd-total{margin-left:auto;font-size:.82rem;}
+.bd .li{font-size:.59rem;color:#555;font-weight:700;line-height:1.7;display:flex;gap:4px;}
+.bd .li .pt{margin-left:auto;color:var(--au);white-space:nowrap;}
+.result-card .rec2{font-size:.64rem;color:#999;font-weight:700;margin-bottom:12px;}
+.result-btns{display:flex;gap:8px;justify-content:center;}
+.cbtn{padding:11px 14px;border:none;border-radius:22px;font-family:'M PLUS Rounded 1c',sans-serif;font-size:.74rem;font-weight:800;cursor:pointer;box-shadow:0 3px 10px var(--sh);}
+.cbtn:active{transform:scale(.94);}
+.cbtn.primary{background:linear-gradient(135deg,var(--sp),var(--au));color:white;flex:1;}
+.cbtn.ghost{background:white;color:var(--cb);}
+
+.confetti{position:fixed;top:-30px;z-index:60;font-size:1.2rem;pointer-events:none;animation:fall linear forwards;}
+@keyframes fall{to{transform:translateY(110dvh) rotate(540deg);opacity:.7;}}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🎋 四季つなぎ</h1>
+  <p>おなじ動物・季節でつなげて取って、盤面のおとなり同士で一筆書きをつくろう</p>
+</header>
+
+<!-- せってい画面 -->
+<div id="setup-screen">
+  <div class="record" id="record-label">せいせき：0勝 0敗 0分</div>
+
+  <div class="section-label">🤖 あいての強さ</div>
+  <div class="diff-row">
+    <button class="diff-btn lv1" id="lv1" onclick="setLevel(1)"><span class="di">🐣</span>よちよち<span class="dn">めのまえの点だけ</span></button>
+    <button class="diff-btn lv2" id="lv2" onclick="setLevel(2)"><span class="di">🦊</span>ふつう<span class="dn">すこし先読み</span></button>
+    <button class="diff-btn lv3" id="lv3" onclick="setLevel(3)"><span class="di">🐲</span>めちゃつよ<span class="dn">先の先まで読む</span></button>
+  </div>
+
+  <div class="section-label">🎬 どちらが先？（あとの人は +1点もらえるよ）</div>
+  <div class="first-row">
+    <button class="first-btn" id="fp" onclick="setFirst('p')">😊 あなたから</button>
+    <button class="first-btn" id="fa" onclick="setFirst('a')">🤖 AIから</button>
+    <button class="first-btn" id="fr" onclick="setFirst('r')">🎲 ランダム</button>
+  </div>
+
+  <div class="rules-box">
+    <h3>📖 あそびかた</h3>
+    <p>① 16まいのカードを<span class="t-me tag">あなた</span>と<span class="t-ai tag">AI</span>で こうたいに1まいずつ取っていくよ。さいしょの1まいは「ふち」のカードから。</p>
+    <p>② 取れるのは、<b>あいてが直前に取ったカード</b>（📍）と「<b>おなじ動物</b>」か「<b>おなじ季節</b>」のカードだけ！（Niyaとおなじルール）</p>
+    <p>③ ぜんぶ取り終わったら、自分が取ったカードの中から、<b>盤面でタテヨコにとなり合っている（ナナメはナシ）</b>カードをたどれる一番長い一本の鎖＝<b>一筆書き</b>をさがすよ。どのカードを取るかで、盤面のどこに自分の陣地ができるかが変わるよ。</p>
+    <p>④ 鎖が長いほど、点数がぐーんと増えるよ👇</p>
+    <div class="score-table">
+      <div class="score-cell">2まい<b>1点</b></div>
+      <div class="score-cell">4まい<b>6点</b></div>
+      <div class="score-cell">6まい<b>15点</b></div>
+      <div class="score-cell">8まい<b>28点</b></div>
+    </div>
+    <p>⑤ あいてを<b>動けなく</b>したら「とじこめ」！ +4点もらって そこでゲーム終了。あとの人は+1点のおまけつき。</p>
+    <p>⑥ 合計点が多いほうの<span class="t-win tag">勝ち！</span></p>
+  </div>
+
+  <button class="start-btn" onclick="startGame()">▶ あそぶ！</button>
+</div>
+
+<!-- ゲーム画面 -->
+<div id="game-screen">
+  <div class="gametop">
+    <button class="back-btn" onclick="quitGame()">← やめる</button>
+    <div class="side p" id="side-p"><div class="top">😊 あなた<span class="pts" id="pts-p">0点</span></div></div>
+    <div class="side a" id="side-a"><div class="top">🤖 AI<span class="pts" id="pts-a">0点</span></div></div>
+  </div>
+  <div id="msg"></div>
+  <div id="chain-row">
+    <div class="chain-box cp" id="chain-p"></div>
+    <div class="chain-box ca" id="chain-a"></div>
+  </div>
+  <div id="grid-wrap"><div id="grid"></div></div>
+</div>
+
+<!-- けっか画面 -->
+<div id="result-overlay">
+  <div class="result-card">
+    <h2 id="result-title"></h2>
+    <div class="why" id="result-why"></div>
+    <div class="bd-wrap">
+      <div class="bd bp"><div class="bd-head">😊 あなた<span class="bd-total" id="bd-total-p"></span></div><div id="bd-list-p"></div></div>
+      <div class="bd ba"><div class="bd-head">🤖 AI<span class="bd-total" id="bd-total-a"></span></div><div id="bd-list-a"></div></div>
+    </div>
+    <div class="rec2" id="result-record"></div>
+    <div class="result-btns">
+      <button class="cbtn ghost" onclick="quitGame()">⚙ せってい</button>
+      <button class="cbtn primary" onclick="startGame()">もういちど！</button>
+    </div>
+  </div>
+</div>
+
+<script>
+'use strict';
+// ── データ ──
+const ANIMALS=[
+  {id:1,n:'アヒル',i:'🦆'},
+  {id:2,n:'クマ',i:'🐻'},
+  {id:3,n:'リス',i:'🐿️'},
+  {id:4,n:'ウサギ',i:'🐰'}
+];
+const SEASONS=[
+  {id:1,n:'はる',i:'🌸',cls:'sp'},
+  {id:2,n:'なつ',i:'🌊',cls:'su'},
+  {id:3,n:'あき',i:'🍁',cls:'au'},
+  {id:4,n:'ふゆ',i:'⛄',cls:'wi'}
+];
+const imgSrc=(a,s)=>`../イラスト/${a}-${s}.jpg`;
+
+// 点数のきまり
+const LOCK_BONUS=4;   // あいてをとじこめたら
+const SECOND_BONUS=1; // あとの人
+
+// 一筆書き：n まいの鎖 → n×(n-1)/2 点（つながるほど ぐんぐん増える）
+function chainPts(n){return n*(n-1)/2;}
+
+// ── せいせきの保存 ──
+const SAVE_KEY='marufu_tsunagi_v1';
+let rec={w:0,l:0,d:0};
+try{rec=JSON.parse(localStorage.getItem(SAVE_KEY))||rec;}catch(e){}
+function persist(){try{localStorage.setItem(SAVE_KEY,JSON.stringify(rec));}catch(e){}}
+function recText(){return `せいせき：${rec.w}勝 ${rec.l}敗 ${rec.d}分`;}
+document.getElementById('record-label').textContent=recText();
+
+// ── せってい ──
+let level=2, firstOpt='r';
+function setLevel(v){
+  level=v;
+  for(const n of [1,2,3])document.getElementById('lv'+n).classList.toggle('sel',n===v);
+}
+function setFirst(v){
+  firstOpt=v;
+  document.getElementById('fp').classList.toggle('sel',v==='p');
+  document.getElementById('fa').classList.toggle('sel',v==='a');
+  document.getElementById('fr').classList.toggle('sel',v==='r');
+}
+setLevel(2);setFirst('r');
+
+// ── ゲームの状態 ──
+let board=[];
+let pMask=0,aMask=0; // だれがどのマスを取ったかの記録
+let last=-1;
+let turn='p';
+let second='a';      // あとの人（+1点）
+let over=false;
+let cardEls=[];
+
+function shuffleBoard(){
+  board=[];
+  for(const an of ANIMALS)for(const se of SEASONS)board.push({a:an.id,s:se.id});
+  for(let i=board.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [board[i],board[j]]=[board[j],board[i]];
+  }
+}
+
+// カードを「取れるか」は、あいてが直前に取ったカードと同じ動物・季節かどうか（Niyaとおなじ）
+function validMoves(occ,lastIdx){
+  const res=[];
+  for(let i=0;i<16;i++){
+    if(occ>>i&1)continue;
+    if(lastIdx<0){
+      const r=i>>2,c=i&3;
+      if(r===0||r===3||c===0||c===3)res.push(i); // さいしょは「ふち」だけ
+    }else{
+      const L=board[lastIdx];
+      if(board[i].a===L.a||board[i].s===L.s)res.push(i);
+    }
+  }
+  return res;
+}
+function popcount(x){let n=0;while(x){n+=x&1;x>>=1;}return n;}
+
+// 2つのマスが、盤面のうえで実際にとなり合っているか（ナナメもふくむ8方向）
+// 一筆書きの点数だけは、動物・季節ではなく「盤面の位置」で判定する
+function isAdjacent(i,j){
+  const r1=i>>2,c1=i&3,r2=j>>2,c2=j&3;
+  return Math.abs(r1-r2)+Math.abs(c1-c2)===1; // タテヨコだけ（ナナメなし）
+}
+
+// mask（自分が取ったマスの記録）の中から、盤面でとなり合ったカードを
+// たどれる一番長い一本の鎖（一筆書き）をさがして、マス番号の並びで返す
+function longestChain(mask){
+  const idxs=[];
+  for(let i=0;i<16;i++)if(mask>>i&1)idxs.push(i);
+  const k=idxs.length;
+  if(k===0)return [];
+  const adj=new Array(k).fill(0);
+  for(let a=0;a<k;a++)for(let b=a+1;b<k;b++){
+    if(isAdjacent(idxs[a],idxs[b])){adj[a]|=1<<b;adj[b]|=1<<a;}
+  }
+  const size=1<<k;
+  const reach=new Uint8Array(size*k);   // reach[mask2*k+last] = そのマスの組合せで last におわる鎖があるか
+  const par=new Int8Array(size*k).fill(-1);
+  for(let i=0;i<k;i++)reach[(1<<i)*k+i]=1;
+  let bestMask=1,bestLast=0;
+  for(let mask2=1;mask2<size;mask2++){
+    for(let last=0;last<k;last++){
+      if(!(mask2>>last&1)||!reach[mask2*k+last])continue;
+      if(popcount(mask2)>popcount(bestMask)){bestMask=mask2;bestLast=last;}
+      for(let nb=0;nb<k;nb++){
+        if(mask2>>nb&1)continue;
+        if(!(adj[last]>>nb&1))continue;
+        const nmask=mask2|(1<<nb);
+        if(!reach[nmask*k+nb]){reach[nmask*k+nb]=1;par[nmask*k+nb]=last;}
+      }
+    }
+  }
+  const pathLocal=[];
+  let m=bestMask,l=bestLast;
+  while(l!==-1){pathLocal.push(l);const p=par[m*k+l];m&=~(1<<l);l=p;}
+  pathLocal.reverse();
+  return pathLocal.map(li=>idxs[li]);
+}
+
+// AIが先読みするときに毎回きびしく鎖さがしをすると重いので、
+// 「つながっているかたまりの中でいちばん大きいもの」で ざっくり見積もる
+function componentHeuristic(mask){
+  const idxs=[];
+  for(let i=0;i<16;i++)if(mask>>i&1)idxs.push(i);
+  const k=idxs.length;
+  if(k===0)return 0;
+  const par=Array.from({length:k},(_,i)=>i);
+  const find=x=>{while(par[x]!==x){par[x]=par[par[x]];x=par[x];}return x;};
+  for(let a=0;a<k;a++)for(let b=a+1;b<k;b++){
+    if(isAdjacent(idxs[a],idxs[b])){
+      const ra=find(a),rb=find(b);if(ra!==rb)par[ra]=rb;
+    }
+  }
+  const size={};
+  for(let i=0;i<k;i++){const r=find(i);size[r]=(size[r]||0)+1;}
+  return chainPts(Math.max(...Object.values(size)));
+}
+
+// mask から点数をかぞえる（一筆書き＋とじこめ＋あとの人ボーナス）
+function scoreMask(mask,isSecond,gotLock){
+  return chainPts(longestChain(mask).length)+(isSecond?SECOND_BONUS:0)+(gotLock?LOCK_BONUS:0);
+}
+
+// ── ゲーム開始 ──
+function startGame(){
+  shuffleBoard();
+  pMask=0;aMask=0;last=-1;over=false;
+  turn=firstOpt==='r'?(Math.random()<.5?'p':'a'):firstOpt;
+  second=turn==='p'?'a':'p';
+
+  const grid=document.getElementById('grid');
+  grid.innerHTML='';
+  cardEls=[];
+  board.forEach((cd,i)=>{
+    const an=ANIMALS.find(x=>x.id===cd.a),se=SEASONS.find(x=>x.id===cd.s);
+    const el=document.createElement('div');
+    el.className='card';
+    el.innerHTML=`<img src="${imgSrc(cd.a,cd.s)}" alt="${an.n}の${se.n}">
+      <div class="chips"><span class="chip c-${se.cls}">${se.i}</span><span class="chip">${an.i}</span></div>
+      <div class="mark"></div>
+      <div class="chainnum"></div>`;
+    el.onclick=()=>tapCard(i);
+    grid.appendChild(el);
+    cardEls.push(el);
+  });
+  // 一筆書きの線を描くSVG。となり合ったカードにしか伸びないので、関係ないカードを
+  // 線がまたぐことはない。
+  const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');
+  svg.id='chain-svg';
+  grid.appendChild(svg);
+
+  document.getElementById('setup-screen').style.display='none';
+  document.getElementById('result-overlay').classList.remove('show');
+  document.getElementById('game-screen').classList.remove('sheet-open');
+  document.getElementById('game-screen').style.display='flex';
+  render();
+  if(turn==='a')setTimeout(aiTurn,800);
+}
+
+function render(){
+  const valid=(!over&&turn==='p')?validMoves(pMask|aMask,last):[];
+  const pChain=longestChain(pMask), aChain=longestChain(aMask);
+  const pSet=new Set(pChain), aSet=new Set(aChain);
+  cardEls.forEach((el,i)=>{
+    el.classList.toggle('taken-p',!!(pMask>>i&1));
+    el.classList.toggle('taken-a',!!(aMask>>i&1));
+    el.classList.toggle('valid',valid.includes(i));
+    el.classList.toggle('last',i===last&&!over);
+    el.querySelector('.mark').textContent=(pMask>>i&1)?'⭐':(aMask>>i&1)?'🤖':'';
+    const inP=pChain.length>=2&&pSet.has(i);
+    const inA=aChain.length>=2&&aSet.has(i);
+    el.classList.toggle('scored',inP||inA);
+    const badge=el.querySelector('.chainnum');
+    if(inP){badge.textContent=pChain.indexOf(i)+1;badge.className='chainnum on side-p';}
+    else if(inA){badge.textContent=aChain.indexOf(i)+1;badge.className='chainnum on side-a';}
+    else{badge.textContent='';badge.className='chainnum';}
+  });
+  renderChainStrip('chain-p',pChain);
+  renderChainStrip('chain-a',aChain);
+  drawChainLines(pChain,aChain);
+  document.getElementById('pts-p').textContent=chainPts(pChain.length)+(second==='p'?SECOND_BONUS:0)+'点';
+  document.getElementById('pts-a').textContent=chainPts(aChain.length)+(second==='a'?SECOND_BONUS:0)+'点';
+  document.getElementById('side-p').classList.toggle('turn-now',!over&&turn==='p');
+  document.getElementById('side-a').classList.toggle('turn-now',!over&&turn==='a');
+  if(over)return;
+  const msg=document.getElementById('msg');
+  if(turn==='p'){
+    msg.textContent=last<0?'😊 あなたの番！ふちの すきなカードをえらんでね':'😊 あなたの番！ひかっているカードから えらんでね';
+  }else{
+    msg.textContent='🤖 AIが かんがえちゅう…';
+  }
+}
+
+// 一筆書きの並びを、順番のわかる帯（矢印つきの絵の列）としても見せる
+function renderChainStrip(elId,chain){
+  const box=document.getElementById(elId);
+  if(chain.length<2){ box.innerHTML='<span class="empty">（まだ鎖なし）</span>'; return; }
+  box.innerHTML=chain.map((i,idx)=>{
+    const img=`<img src="${imgSrc(board[i].a,board[i].s)}" alt="">`;
+    return idx===0 ? img : '<span class="arrow">→</span>'+img;
+  }).join('');
+}
+
+// 一筆書きの並びを、実際に盤面の上で線として結ぶ。となり合ったカードだけしか
+// つながらないので、関係ないカードの上を線が横切ることはない。
+function drawChainLines(pChain,aChain){
+  const svg=document.getElementById('chain-svg');
+  if(!svg)return;
+  const gridRect=document.getElementById('grid').getBoundingClientRect();
+  if(gridRect.width===0)return; // まだ画面に出ていない
+  svg.setAttribute('viewBox',`0 0 ${gridRect.width} ${gridRect.height}`);
+  svg.innerHTML='';
+  function centerOf(i){
+    const r=cardEls[i].getBoundingClientRect();
+    return [r.left-gridRect.left+r.width/2, r.top-gridRect.top+r.height/2];
+  }
+  function drawOne(chain,color){
+    if(chain.length<2)return;
+    const d=chain.map((i,idx)=>{
+      const [x,y]=centerOf(i);
+      return (idx===0?'M':'L')+x.toFixed(1)+','+y.toFixed(1);
+    }).join(' ');
+    const path=document.createElementNS('http://www.w3.org/2000/svg','path');
+    path.setAttribute('d',d);
+    path.setAttribute('stroke',color);
+    path.setAttribute('stroke-width','5');
+    path.setAttribute('opacity','0.75');
+    svg.appendChild(path);
+  }
+  drawOne(pChain,getComputedStyle(document.documentElement).getPropertyValue('--me').trim());
+  drawOne(aChain,getComputedStyle(document.documentElement).getPropertyValue('--ai').trim());
+}
+
+// ── カードを取る ──
+function tapCard(i){
+  if(over||turn!=='p')return;
+  if(!validMoves(pMask|aMask,last).includes(i))return;
+  claim('p',i);
+}
+
+function claim(side,i){
+  if(side==='p')pMask|=1<<i;else aMask|=1<<i;
+  last=i;
+  if((pMask|aMask)===0xFFFF){endGame(null);return;}      // ぜんぶ取ったら自然に終了
+  turn=side==='p'?'a':'p';
+  if(validMoves(pMask|aMask,last).length===0){endGame(side);return;} // とじこめ！
+  render();
+  if(turn==='a')setTimeout(aiTurn,700);
+}
+
+// ── AIの思考 ──
+// negamax = 「自分が最善→相手も最善→…」と先読みするさがし方
+function nega(me,opp,meSec,lastIdx,depth,alpha,beta){
+  const mv=validMoves(me|opp,lastIdx);
+  if(mv.length===0) // 自分がとじこめられた：あいてに+4点
+    return scoreMask(me,meSec,false)-scoreMask(opp,!meSec,true);
+  if(depth<=0)
+    return componentHeuristic(me)-componentHeuristic(opp)+0.15*mv.length;
+  let best=-Infinity;
+  for(const m of mv){
+    const nm=me|(1<<m);
+    let sc;
+    if((nm|opp)===0xFFFF)sc=scoreMask(nm,meSec,false)-scoreMask(opp,!meSec,false);
+    else sc=-nega(opp,nm,!meSec,m,depth-1,-beta,-alpha);
+    if(sc>best)best=sc;
+    if(best>alpha)alpha=best;
+    if(alpha>=beta)break;
+  }
+  return best;
+}
+
+function aiPick(){
+  const mv=validMoves(pMask|aMask,last);
+  const aSec=second==='a';
+  if(level===1){
+    // よちよち：いますぐ点が上がる場所をえらぶだけ
+    let best=[],bestSc=-Infinity;
+    for(const m of mv){
+      const sc=scoreMask(aMask|(1<<m),aSec,false);
+      if(sc>bestSc){bestSc=sc;best=[m];}
+      else if(sc===bestSc)best.push(m);
+    }
+    return best[Math.floor(Math.random()*best.length)];
+  }
+  const remaining=16-popcount(pMask|aMask);
+  const depth=level===2?3:(remaining<=9?remaining:6);
+  let best=[],bestSc=-Infinity;
+  for(const m of mv){
+    const nm=aMask|(1<<m);
+    let sc;
+    if((nm|pMask)===0xFFFF)sc=scoreMask(nm,aSec,false)-scoreMask(pMask,!aSec,false);
+    else if(validMoves(nm|pMask,m).length===0)sc=scoreMask(nm,aSec,true)-scoreMask(pMask,!aSec,false);
+    else sc=-nega(pMask,nm,!aSec,m,depth-1,-Infinity,Infinity);
+    if(sc>bestSc){bestSc=sc;best=[m];}
+    else if(sc===bestSc)best.push(m);
+  }
+  return best[Math.floor(Math.random()*best.length)];
+}
+
+function aiTurn(){
+  if(over||turn!=='a')return;
+  claim('a',aiPick());
+}
+
+// ── けっか ──
+function breakdown(mask,isSecond,gotLock){
+  const rows=[];
+  const chain=longestChain(mask);
+  if(chain.length>=2)rows.push([`🎋 一筆書き ${chain.length}まい`,chainPts(chain.length)]);
+  if(gotLock)rows.push(['🔒 とじこめ',LOCK_BONUS]);
+  if(isSecond)rows.push(['🍙 あとの人',SECOND_BONUS]);
+  if(!rows.length)rows.push(['（点なし）',0]);
+  return rows;
+}
+
+function endGame(locker){
+  over=true;
+  render();
+  const sp=scoreMask(pMask,second==='p',locker==='p');
+  const sa=scoreMask(aMask,second==='a',locker==='a');
+
+  const title=document.getElementById('result-title');
+  let winner=null;
+  if(sp>sa){winner='p';rec.w++;title.textContent='🎉 あなたの勝ち！';title.className='win';}
+  else if(sa>sp){winner='a';rec.l++;title.textContent='😢 AIの勝ち…';title.className='lose';}
+  else{rec.d++;title.textContent='🤝 ひきわけ！';title.className='draw';}
+  persist();
+  document.getElementById('result-why').textContent=
+    locker===null?'16まいぜんぶ取りきったよ！':
+    locker==='p'?'AIをとじこめて +4点！':'とじこめられて AIに+4点…';
+  document.getElementById('msg').textContent=winner==='p'?'🎉 あなたの勝ち！':winner==='a'?'😢 AIの勝ち…':'🤝 ひきわけ！';
+
+  document.getElementById('bd-total-p').textContent=sp+'点';
+  document.getElementById('bd-total-a').textContent=sa+'点';
+  const conf=[['p',pMask,'bd-list-p'],['a',aMask,'bd-list-a']];
+  for(const [side,mask,listId] of conf){
+    const box=document.getElementById(listId);
+    box.innerHTML='';
+    breakdown(mask,second===side,locker===side).forEach(([label,pt])=>{
+      const d=document.createElement('div');
+      d.className='li';
+      d.innerHTML=`<span>${label}</span><span class="pt">${pt?pt+'点':''}</span>`;
+      box.appendChild(d);
+    });
+  }
+  document.getElementById('result-record').textContent=recText();
+  document.getElementById('record-label').textContent=recText();
+
+  setTimeout(()=>{
+    document.getElementById('result-overlay').classList.add('show');
+    document.getElementById('game-screen').classList.add('sheet-open'); // 盤面ぜんぶが見えるよう、シートの分だけ盤を小さくする
+    if(winner==='p')confetti();
+  },1100);
+}
+
+function confetti(){
+  const emo=['🌸','🌊','🍁','⛄','⭐','🎋','🎀'];
+  for(let i=0;i<26;i++){
+    const c=document.createElement('div');
+    c.className='confetti';
+    c.textContent=emo[Math.floor(Math.random()*emo.length)];
+    c.style.left=Math.random()*100+'vw';
+    c.style.animationDuration=(2+Math.random()*2.5)+'s';
+    c.style.animationDelay=(Math.random()*.8)+'s';
+    document.body.appendChild(c);
+    setTimeout(()=>c.remove(),5500);
+  }
+}
+
+function quitGame(){
+  over=true;
+  document.getElementById('result-overlay').classList.remove('show');
+  document.getElementById('game-screen').classList.remove('sheet-open');
+  document.getElementById('game-screen').style.display='none';
+  document.getElementById('setup-screen').style.display='flex';
+}
+</script>
+</body>
+</html>

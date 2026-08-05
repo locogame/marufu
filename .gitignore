@@ -1,3 +1,7 @@
 # OSが自動生成するゴミファイル
 .DS_Store
 Thumbs.db
+
+# DB接続情報などの秘密情報
+db_config.php
+サーバー用ログイン情報.txt

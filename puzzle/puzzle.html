@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>四季のおもいでパズル</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Kaisei+Decol:wght@400;700&family=M+PLUS+Rounded+1c:wght@400;700;800&display=swap');
+:root{
+  --sp:#e0608a;--su:#2a9d8f;--au:#e07b39;--wi:#4a7fb5;
+  --sp-l:#ffd6e8;--su-l:#b8f0e8;--au-l:#ffd8aa;--wi-l:#c0d8f8;
+  --bg:#fdf6ee;--cb:#5a3f2a;--text:#2d1f1f;--ui:#fff9f2;
+  --sh:rgba(80,40,20,0.15);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;overflow:hidden;}
+body{font-family:'M PLUS Rounded 1c',sans-serif;background:var(--bg);color:var(--text);display:flex;flex-direction:column;height:100dvh;}
+
+/* HEADER */
+header{flex-shrink:0;background:linear-gradient(120deg,#f9a8c9 0%,#6dd0c5 38%,#f4a261 68%,#90b8e0 100%);padding:7px 12px 5px;padding-top:calc(7px + env(safe-area-inset-top,0px));text-align:center;box-shadow:0 2px 8px var(--sh);}
+header h1{font-family:'Kaisei Decol',serif;font-size:clamp(.9rem,4vw,1.2rem);color:#fff;text-shadow:0 2px 5px rgba(0,0,0,.28);letter-spacing:.04em;}
+header p{font-size:.57rem;color:rgba(255,255,255,.9);margin-top:1px;}
+
+/* ── ALBUM SCREEN ── */
+#album-screen{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:14px 14px calc(20px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;align-items:center;gap:13px;}
+.album-note{font-size:.66rem;color:#8a6a4a;text-align:center;line-height:1.6;}
+.progress-box{background:white;border-radius:13px;padding:8px 16px;border:1px solid #e8d9c8;box-shadow:0 2px 6px var(--sh);font-size:.72rem;font-weight:800;color:var(--cb);display:flex;align-items:center;gap:8px;}
+.progress-box .big{font-size:1.05rem;color:var(--au);}
+
+/* diff */
+.diff-row{display:flex;gap:7px;width:100%;max-width:340px;}
+.diff-btn{flex:1;padding:8px 4px;border:2.5px solid #ddd;border-radius:11px;background:white;cursor:pointer;text-align:center;font-family:'M PLUS Rounded 1c',sans-serif;font-size:.7rem;font-weight:800;box-shadow:0 2px 5px var(--sh);transition:all .15s;color:#888;}
+.diff-btn:active{transform:scale(.93);}
+.diff-btn .dn{font-size:.55rem;display:block;margin-top:1px;font-weight:400;}
+.diff-btn.sel3{border-color:#82c99a;background:#f0fff4;color:#2e7d52;}
+.diff-btn.sel4{border-color:var(--sp);background:#fff0f5;color:#9a2050;}
+
+.season-group{width:100%;max-width:400px;}
+.season-label{display:flex;align-items:center;gap:6px;font-size:.74rem;font-weight:800;margin-bottom:6px;}
+.season-label .badge{padding:2px 10px;border-radius:20px;color:white;font-size:.66rem;}
+.b-sp{background:var(--sp);}.b-su{background:var(--su);}.b-au{background:var(--au);}.b-wi{background:var(--wi);}
+.thumb-row{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}
+.thumb{position:relative;border-radius:11px;overflow:hidden;border:3px solid #e0d0c0;cursor:pointer;aspect-ratio:654/911;background:#eee;box-shadow:0 2px 6px var(--sh);transition:transform .12s;}
+.thumb:active{transform:scale(.94);}
+.thumb img{width:100%;height:100%;object-fit:cover;display:block;}
+.thumb.cleared{border-color:#f0b840;}
+.thumb .stars{position:absolute;bottom:2px;left:0;right:0;display:flex;justify-content:center;gap:3px;font-size:.6rem;text-shadow:0 1px 2px rgba(0,0,0,.4);}
+.thumb .star{opacity:.25;filter:grayscale(1);}
+.thumb .star.on{opacity:1;filter:none;}
+
+/* ── GAME SCREEN ── */
+#game-screen{display:none;flex:1;overflow:hidden;flex-direction:column;align-items:center;padding:10px 12px calc(14px + env(safe-area-inset-bottom,0px));gap:9px;}
+.topbar{display:flex;align-items:center;gap:8px;width:100%;max-width:420px;}
+.back-btn{padding:7px 12px;border:none;border-radius:11px;background:white;box-shadow:0 2px 5px var(--sh);font-family:'M PLUS Rounded 1c',sans-serif;font-size:.68rem;font-weight:800;color:var(--cb);cursor:pointer;}
+.back-btn:active{transform:scale(.93);}
+.stat{background:white;border-radius:11px;padding:5px 10px;box-shadow:0 2px 5px var(--sh);font-size:.62rem;font-weight:800;color:#888;text-align:center;flex:1;}
+.stat .v{display:block;font-size:.85rem;color:var(--cb);}
+.ref{width:44px;border-radius:8px;overflow:hidden;border:2px solid #e0d0c0;flex-shrink:0;box-shadow:0 2px 5px var(--sh);}
+.ref img{width:100%;display:block;}
+#puzzle-title{font-size:.78rem;font-weight:800;color:var(--cb);display:flex;align-items:center;gap:6px;}
+#puzzle-title .badge{padding:1px 9px;border-radius:20px;color:white;font-size:.64rem;}
+
+#board-wrap{flex:1;display:flex;align-items:center;justify-content:center;width:100%;min-height:0;}
+#board{position:relative;aspect-ratio:654/911;width:min(92vw,420px,calc((100dvh - 205px)*.718));border-radius:14px;background:#e8dcc8;box-shadow:0 4px 16px var(--sh);overflow:hidden;}
+.tile{position:absolute;background-repeat:no-repeat;cursor:pointer;transition:left .16s ease,top .16s ease;box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.55);border-radius:4px;}
+#board.done .tile{box-shadow:none;border-radius:0;transition:left .16s ease,top .16s ease,box-shadow .5s;}
+.tile.empty{visibility:hidden;}
+#board.done .tile.empty{visibility:visible;}
+
+/* ── CLEAR OVERLAY ── */
+#clear-overlay{display:none;position:fixed;inset:0;background:rgba(60,35,20,.55);z-index:50;align-items:center;justify-content:center;padding:20px;}
+#clear-overlay.show{display:flex;}
+.clear-card{background:var(--ui);border-radius:20px;padding:18px 20px calc(18px + env(safe-area-inset-bottom,0px));max-width:320px;width:100%;text-align:center;box-shadow:0 10px 40px rgba(0,0,0,.3);animation:pop .4s cubic-bezier(.2,1.6,.4,1);}
+@keyframes pop{from{transform:scale(.6);opacity:0;}to{transform:scale(1);opacity:1;}}
+.clear-card h2{font-family:'Kaisei Decol',serif;font-size:1.15rem;color:var(--au);margin-bottom:8px;}
+.clear-card .pic{width:56%;margin:0 auto 10px;border-radius:12px;overflow:hidden;border:3px solid #f0b840;box-shadow:0 4px 12px var(--sh);}
+.clear-card .pic img{width:100%;display:block;}
+.clear-card .cstats{font-size:.72rem;color:#666;margin-bottom:4px;font-weight:700;}
+.clear-card .newbest{font-size:.68rem;color:var(--sp);font-weight:800;margin-bottom:8px;min-height:1em;}
+.clear-btns{display:flex;gap:8px;justify-content:center;}
+.cbtn{padding:10px 14px;border:none;border-radius:22px;font-family:'M PLUS Rounded 1c',sans-serif;font-size:.74rem;font-weight:800;cursor:pointer;box-shadow:0 3px 10px var(--sh);}
+.cbtn:active{transform:scale(.94);}
+.cbtn.primary{background:linear-gradient(135deg,var(--sp),var(--au));color:white;flex:1;}
+.cbtn.ghost{background:white;color:var(--cb);}
+
+/* confetti */
+.confetti{position:fixed;top:-30px;z-index:60;font-size:1.2rem;pointer-events:none;animation:fall linear forwards;}
+@keyframes fall{to{transform:translateY(110dvh) rotate(540deg);opacity:.7;}}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🧩 四季のおもいでパズル</h1>
+  <p>ばらばらになった おもいでの絵を すべらせて もとにもどそう</p>
+</header>
+
+<!-- アルバム画面 -->
+<div id="album-screen">
+  <div class="progress-box">📖 アルバム <span class="big" id="progress-num">0</span>/ 16 まい</div>
+  <div class="diff-row">
+    <button class="diff-btn" id="diff3" onclick="setDiff(3)">🌱 かんたん<span class="dn">3×3 ピース</span></button>
+    <button class="diff-btn" id="diff4" onclick="setDiff(4)">🔥 ほんかく<span class="dn">4×4 ピース</span></button>
+  </div>
+  <p class="album-note">すきな絵をタップすると パズルがはじまるよ。<br>クリアすると 星のしるしがつくよ ⭐</p>
+  <div id="album-list"></div>
+</div>
+
+<!-- パズル画面 -->
+<div id="game-screen">
+  <div id="puzzle-title"></div>
+  <div class="topbar">
+    <button class="back-btn" onclick="backToAlbum()">← アルバム</button>
+    <div class="stat">うごかした回数<span class="v" id="stat-moves">0</span></div>
+    <div class="stat">タイム<span class="v" id="stat-time">0:00</span></div>
+    <div class="ref"><img id="ref-img" src="" alt="おてほん"></div>
+  </div>
+  <div id="board-wrap"><div id="board"></div></div>
+</div>
+
+<!-- クリア画面 -->
+<div id="clear-overlay">
+  <div class="clear-card">
+    <h2>🎉 かんせい！</h2>
+    <div class="pic"><img id="clear-img" src="" alt=""></div>
+    <div class="cstats" id="clear-stats"></div>
+    <div class="newbest" id="clear-best"></div>
+    <div class="clear-btns">
+      <button class="cbtn ghost" onclick="backToAlbum()">📖 アルバム</button>
+      <button class="cbtn primary" onclick="nextPuzzle()">つぎの絵へ →</button>
+    </div>
+  </div>
+</div>
+
+<script>
+'use strict';
+// ── データ定義 ──
+const ANIMALS=[
+  {id:1,name:'アヒル',icon:'🦆'},
+  {id:2,name:'クマ',icon:'🐻'},
+  {id:3,name:'リス',icon:'🐿️'},
+  {id:4,name:'ウサギ',icon:'🐰'}
+];
+const SEASONS=[
+  {id:1,name:'はる',icon:'🌸',cls:'sp'},
+  {id:2,name:'なつ',icon:'🌊',cls:'su'},
+  {id:3,name:'あき',icon:'🍁',cls:'au'},
+  {id:4,name:'ふゆ',icon:'⛄',cls:'wi'}
+];
+const imgSrc=(a,s)=>`../イラスト/${a}-${s}.jpg`;
+
+// ── セーブデータ（ブラウザに記録が残る）──
+const SAVE_KEY='marufu_puzzle_v1';
+let save={};
+try{save=JSON.parse(localStorage.getItem(SAVE_KEY))||{};}catch(e){save={};}
+function persist(){try{localStorage.setItem(SAVE_KEY,JSON.stringify(save));}catch(e){}}
+const keyOf=(a,s)=>`${a}-${s}`;
+
+// ── 難易度 ──
+let N=3;
+function setDiff(n){
+  N=n;
+  document.getElementById('diff3').className='diff-btn'+(n===3?' sel3':'');
+  document.getElementById('diff4').className='diff-btn'+(n===4?' sel4':'');
+}
+setDiff(3);
+
+// ── アルバム画面をつくる ──
+function renderAlbum(){
+  const list=document.getElementById('album-list');
+  list.innerHTML='';
+  let clearedCount=0;
+  SEASONS.forEach(se=>{
+    const g=document.createElement('div');
+    g.className='season-group';
+    g.innerHTML=`<div class="season-label"><span class="badge b-${se.cls}">${se.icon} ${se.name}</span></div>`;
+    const row=document.createElement('div');
+    row.className='thumb-row';
+    ANIMALS.forEach(an=>{
+      const rec=save[keyOf(an.id,se.id)]||{};
+      const cleared=rec[3]||rec[4];
+      if(cleared)clearedCount++;
+      const t=document.createElement('div');
+      t.className='thumb'+(cleared?' cleared':'');
+      t.innerHTML=`<img src="${imgSrc(an.id,se.id)}" alt="${an.name}の${se.name}">
+        <div class="stars">
+          <span class="star ${rec[3]?'on':''}">⭐</span>
+          <span class="star ${rec[4]?'on':''}">🌟</span>
+        </div>`;
+      t.onclick=()=>startPuzzle(an.id,se.id);
+      row.appendChild(t);
+    });
+    g.appendChild(row);
+    list.appendChild(g);
+  });
+  document.getElementById('progress-num').textContent=clearedCount;
+}
+
+// ── パズルの状態 ──
+let cur=null;      // いま遊んでいる絵 {a,s}
+let grid=[];       // マスごとに「どのピースが置かれているか」を覚える表
+let EMPTY=8;       // からっぽ扱いのピース番号（最後のピース）
+let moves=0, seconds=0, timerId=null, started=false, finished=false;
+let tileEls=[];
+
+function startPuzzle(a,s){
+  cur={a,s};
+  EMPTY=N*N-1;
+  moves=0;seconds=0;started=false;finished=false;
+  stopTimer();
+  updateStats();
+
+  const an=ANIMALS.find(x=>x.id===a), se=SEASONS.find(x=>x.id===s);
+  document.getElementById('puzzle-title').innerHTML=
+    `<span class="badge b-${se.cls}">${se.icon} ${se.name}</span>${an.icon} ${an.name} <small style="color:#999;font-weight:400;">(${N}×${N})</small>`;
+  document.getElementById('ref-img').src=imgSrc(a,s);
+
+  // そろった状態から、正しい動きだけをランダムに繰り返してシャッフルする
+  // （こうすると必ず解ける並びになる）
+  grid=[...Array(N*N).keys()];
+  do{shuffle();}while(isSolved());
+
+  buildBoard();
+  document.getElementById('album-screen').style.display='none';
+  document.getElementById('game-screen').style.display='flex';
+  document.getElementById('clear-overlay').classList.remove('show');
+}
+
+function shuffle(){
+  const times=N===3?120:300;
+  for(let i=0;i<times;i++){
+    const e=grid.indexOf(EMPTY);
+    const er=Math.floor(e/N),ec=e%N;
+    const cands=[];
+    if(er>0)cands.push(e-N);
+    if(er<N-1)cands.push(e+N);
+    if(ec>0)cands.push(e-1);
+    if(ec<N-1)cands.push(e+1);
+    const p=cands[Math.floor(Math.random()*cands.length)];
+    grid[e]=grid[p];grid[p]=EMPTY;
+  }
+}
+
+function buildBoard(){
+  const board=document.getElementById('board');
+  board.classList.remove('done');
+  board.innerHTML='';
+  tileEls=[];
+  const src=imgSrc(cur.a,cur.s);
+  for(let p=0;p<N*N;p++){
+    const el=document.createElement('div');
+    el.className='tile'+(p===EMPTY?' empty':'');
+    const hr=Math.floor(p/N),hc=p%N;   // ピースの「ほんとうの場所」
+    el.style.width=(100/N)+'%';
+    el.style.height=(100/N)+'%';
+    el.style.backgroundImage=`url('${src}')`;
+    el.style.backgroundSize=(N*100)+'% '+(N*100)+'%';
+    el.style.backgroundPosition=(hc*100/(N-1))+'% '+(hr*100/(N-1))+'%';
+    el.onclick=()=>tapPiece(p);
+    board.appendChild(el);
+    tileEls.push(el);
+  }
+  placeTiles();
+}
+
+function placeTiles(){
+  for(let slot=0;slot<N*N;slot++){
+    const p=grid[slot];
+    tileEls[p].style.left=(slot%N)*(100/N)+'%';
+    tileEls[p].style.top=Math.floor(slot/N)*(100/N)+'%';
+  }
+}
+
+// ピースをタップ：からっぽのマスと同じ行・列なら、まとめてすべる
+function tapPiece(p){
+  if(finished)return;
+  const s=grid.indexOf(p);
+  const e=grid.indexOf(EMPTY);
+  const sr=Math.floor(s/N),sc=s%N,er=Math.floor(e/N),ec=e%N;
+  if(s===e||(sr!==er&&sc!==ec))return;
+  const step=sr===er?(sc>ec?1:-1):(sr>er?N:-N);
+  let c=e;
+  while(c!==s){grid[c]=grid[c+step];c+=step;}
+  grid[s]=EMPTY;
+  if(!started){started=true;startTimer();}
+  moves++;
+  updateStats();
+  placeTiles();
+  if(isSolved())onClear();
+}
+
+function isSolved(){return grid.every((p,i)=>p===i);}
+
+function updateStats(){
+  document.getElementById('stat-moves').textContent=moves;
+  document.getElementById('stat-time').textContent=fmt(seconds);
+}
+function fmt(t){return Math.floor(t/60)+':'+String(t%60).padStart(2,'0');}
+function startTimer(){timerId=setInterval(()=>{seconds++;updateStats();},1000);}
+function stopTimer(){if(timerId){clearInterval(timerId);timerId=null;}}
+
+// ── クリア！ ──
+function onClear(){
+  finished=true;
+  stopTimer();
+  document.getElementById('board').classList.add('done');
+
+  const k=keyOf(cur.a,cur.s);
+  const rec=save[k]||{};
+  const prev=rec[N];
+  const isBest=!prev||moves<prev;
+  if(isBest)rec[N]=moves;
+  save[k]=rec;
+  persist();
+
+  document.getElementById('clear-img').src=imgSrc(cur.a,cur.s);
+  document.getElementById('clear-stats').textContent=`${moves}回 ／ ${fmt(seconds)} でかんせい！`;
+  document.getElementById('clear-best').textContent=
+    isBest?'✨ じこベスト記録！':`じこベスト：${prev}回`;
+
+  setTimeout(()=>{
+    document.getElementById('clear-overlay').classList.add('show');
+    confetti();
+  },700);
+}
+
+function confetti(){
+  const emo=['🌸','🌊','🍁','⛄','⭐','🎀','🧩'];
+  for(let i=0;i<26;i++){
+    const c=document.createElement('div');
+    c.className='confetti';
+    c.textContent=emo[Math.floor(Math.random()*emo.length)];
+    c.style.left=Math.random()*100+'vw';
+    c.style.animationDuration=(2+Math.random()*2.5)+'s';
+    c.style.animationDelay=(Math.random()*.8)+'s';
+    document.body.appendChild(c);
+    setTimeout(()=>c.remove(),5500);
+  }
+}
+
+// まだクリアしていない絵から順番につぎへ（全部クリア済みなら次の絵）
+function nextPuzzle(){
+  const order=[];
+  SEASONS.forEach(se=>ANIMALS.forEach(an=>order.push([an.id,se.id])));
+  const idx=order.findIndex(([a,s])=>a===cur.a&&s===cur.s);
+  for(let i=1;i<=order.length;i++){
+    const [a,s]=order[(idx+i)%order.length];
+    const rec=save[keyOf(a,s)]||{};
+    if(!rec[N]){startPuzzle(a,s);return;}
+  }
+  const [a,s]=order[(idx+1)%order.length];
+  startPuzzle(a,s);
+}
+
+function backToAlbum(){
+  stopTimer();
+  document.getElementById('clear-overlay').classList.remove('show');
+  document.getElementById('game-screen').style.display='none';
+  document.getElementById('album-screen').style.display='flex';
+  renderAlbum();
+}
+
+renderAlbum();
+</script>
+</body>
+</html>

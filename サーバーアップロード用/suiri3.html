@@ -1,0 +1,1093 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>四季のなぞあて・3まい版</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Kaisei+Decol:wght@400;700&family=M+PLUS+Rounded+1c:wght@400;500;700;800&display=swap');
+:root{
+  --sp:#df6b94;--su:#33a796;--au:#df843f;--wi:#5484ba;
+  --sp-l:#ffe0eb;--su-l:#d5f5ee;--au-l:#ffe2bd;--wi-l:#dceafb;
+  --ink:#3d2d28;--muted:#8b756b;--paper:#fffaf3;--bg:#f6eee3;
+  --me:#df6b94;--ai:#597db8;--gold:#e9ad45;--line:#e8d8c8;
+  --shadow:0 5px 18px rgba(89,55,34,.14);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html,body{min-height:100%;}
+body{font-family:'M PLUS Rounded 1c',sans-serif;background:
+  radial-gradient(circle at 8% 4%,rgba(255,190,210,.42),transparent 25%),
+  radial-gradient(circle at 92% 15%,rgba(126,211,199,.34),transparent 26%),
+  linear-gradient(155deg,#fff9f1,var(--bg));color:var(--ink);min-height:100dvh;}
+button{font-family:inherit;color:inherit;}
+button:focus-visible{outline:3px solid #e9ad45;outline-offset:2px;}
+
+header{position:relative;z-index:3;background:linear-gradient(118deg,#f0a3bd 0%,#71cbbb 37%,#e7aa68 69%,#81a8d1 100%);padding:9px 14px 7px;padding-top:calc(9px + env(safe-area-inset-top,0px));text-align:center;box-shadow:0 3px 12px rgba(80,50,30,.16);}
+header h1{font-family:'Kaisei Decol',serif;font-size:clamp(1.05rem,4.8vw,1.38rem);color:#fff;letter-spacing:.07em;text-shadow:0 2px 5px rgba(44,35,30,.27);}
+header p{font-size:.62rem;color:rgba(255,255,255,.94);font-weight:700;margin-top:1px;}
+
+#setup-screen{width:min(100%,620px);margin:0 auto;padding:18px 15px calc(28px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;align-items:center;gap:14px;}
+.record{background:rgba(255,255,255,.86);padding:6px 16px;border-radius:30px;font-size:.69rem;font-weight:800;color:var(--muted);box-shadow:0 2px 8px rgba(80,40,20,.08);}
+.hero{width:100%;background:rgba(255,250,243,.94);border:1px solid rgba(220,195,170,.65);border-radius:22px;padding:18px 16px 15px;box-shadow:var(--shadow);text-align:center;position:relative;overflow:hidden;}
+.hero:before,.hero:after{content:'?';position:absolute;font-family:'Kaisei Decol',serif;font-size:5rem;font-weight:700;color:rgba(223,107,148,.07);transform:rotate(-12deg);left:7px;top:-17px;}
+.hero:after{left:auto;right:10px;top:55px;color:rgba(84,132,186,.07);transform:rotate(12deg);}
+.hero-title{font-family:'Kaisei Decol',serif;font-size:1.05rem;color:#68483a;position:relative;}
+.hero-title b{color:var(--me);font-size:1.35rem;}
+.hero p{font-size:.7rem;line-height:1.75;color:#765e51;margin-top:5px;position:relative;}
+.motif-strip{display:flex;justify-content:center;gap:4px;margin-top:12px;position:relative;}
+.motif-strip span{width:29px;height:29px;border-radius:9px;background:#fff;display:grid;place-items:center;font-size:1rem;border:1px solid var(--line);box-shadow:0 2px 5px rgba(80,50,30,.09);}
+.setup-label{width:100%;font-size:.71rem;font-weight:800;color:#75594c;margin-bottom:-7px;}
+.choice-row{display:flex;width:100%;gap:7px;}
+.choice{flex:1;border:2px solid #e6d9cd;background:rgba(255,255,255,.85);border-radius:14px;padding:10px 5px;cursor:pointer;font-size:.7rem;font-weight:800;box-shadow:0 2px 7px rgba(80,50,30,.08);transition:.15s;}
+.choice:active{transform:scale(.95);}
+.choice .big{display:block;font-size:1.15rem;margin-bottom:1px;}
+.choice .sub{display:block;font-size:.52rem;color:#9a877d;font-weight:500;margin-top:2px;}
+.choice.selected{border-color:var(--me);background:#fff1f6;color:#aa3e66;box-shadow:0 3px 11px rgba(223,107,148,.2);}
+.first-row .choice.selected{border-color:var(--ai);background:#f0f6ff;color:#466999;box-shadow:0 3px 11px rgba(84,132,186,.18);}
+.rules{width:100%;background:rgba(255,255,255,.78);border:1px dashed #d8bfa8;border-radius:17px;padding:13px 14px;}
+.rules h2{font-size:.76rem;color:#73503e;margin-bottom:7px;}
+.rules p{font-size:.63rem;line-height:1.65;color:#725f56;margin-top:5px;padding-left:22px;position:relative;}
+.rules p .num{position:absolute;left:0;top:0;width:17px;height:17px;border-radius:50%;display:grid;place-items:center;background:#f2d2a6;color:#70482f;font-size:.56rem;font-weight:800;}
+.danger{color:#bc4760;font-weight:800;}
+.start-btn{width:100%;border:none;border-radius:24px;padding:14px;background:linear-gradient(135deg,#e66f98,#e9a74e);color:#fff;font-size:.88rem;font-weight:800;letter-spacing:.05em;box-shadow:0 6px 17px rgba(202,99,91,.3);cursor:pointer;}
+.start-btn:active{transform:scale(.97);}
+.analytics-note{font-size:.52rem;line-height:1.55;color:#958279;text-align:center;margin-top:-7px;}
+
+#game-screen{display:none;width:min(100%,1120px);margin:0 auto;padding:10px 10px calc(22px + env(safe-area-inset-bottom,0px));}
+.game-layout{display:flex;flex-direction:column;}
+.game-main{min-width:0;}
+.matrix-dock{background:rgba(255,250,243,.94);border:1px solid #ddcbbb;border-radius:18px;padding:11px;box-shadow:var(--shadow);margin-top:10px;}
+.matrix-dock-title{display:flex;align-items:center;gap:6px;font-family:'Kaisei Decol',serif;font-size:.78rem;color:#674b3e;margin-bottom:3px;}
+.matrix-dock-note{font-size:.51rem;color:#8a756b;line-height:1.45;margin-bottom:6px;}
+.gamebar{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:7px;margin-bottom:8px;}
+.small-btn{border:1px solid #e4d6c9;background:rgba(255,255,255,.9);border-radius:10px;padding:7px 9px;font-size:.61rem;font-weight:800;box-shadow:0 2px 6px rgba(80,50,30,.09);cursor:pointer;}
+.turn-pill{justify-self:center;border-radius:20px;padding:6px 13px;background:#fff;box-shadow:0 2px 7px rgba(80,50,30,.1);font-size:.68rem;font-weight:800;color:var(--muted);transition:.2s;}
+.turn-pill.me{background:#fff0f5;color:#b74270;box-shadow:0 2px 10px rgba(223,107,148,.2);}
+.turn-pill.ai{background:#eef5ff;color:#466d9f;box-shadow:0 2px 10px rgba(84,132,186,.18);}
+.deck-pill{font-size:.59rem;font-weight:800;color:#816f65;background:rgba(255,255,255,.85);padding:6px 8px;border-radius:10px;border:1px solid #eaded3;}
+
+.player-panel{background:rgba(255,255,255,.82);border:2px solid var(--line);border-radius:18px;padding:9px 10px;box-shadow:0 3px 10px rgba(80,50,30,.09);transition:.2s;}
+.player-panel.active.me-panel{border-color:#e69ab6;box-shadow:0 3px 14px rgba(223,107,148,.2);}
+.player-panel.active.ai-panel{border-color:#91acd0;box-shadow:0 3px 14px rgba(84,132,186,.19);}
+.panel-head{display:flex;align-items:center;font-size:.67rem;font-weight:800;margin-bottom:7px;}
+.panel-head .who{font-size:.75rem;}
+.panel-head .clue{margin-left:auto;color:#8e7c72;font-size:.56rem;font-weight:700;}
+.hand{display:flex;justify-content:center;gap:5px;min-height:82px;}
+.card,.card-back{width:min(17vw,74px);aspect-ratio:654/911;border-radius:10px;overflow:hidden;position:relative;flex-shrink:0;box-shadow:0 3px 8px rgba(70,45,30,.17);}
+.card{border:2px solid #fff;background:#eee;}
+.card img{width:100%;height:100%;object-fit:cover;display:block;}
+.card .season-dot{position:absolute;top:4px;left:4px;width:18px;height:18px;border-radius:50%;display:grid;place-items:center;color:#fff;font-size:.56rem;border:1.5px solid rgba(255,255,255,.8);text-shadow:0 1px 2px rgba(0,0,0,.25);}
+.card .name{position:absolute;left:3px;right:3px;bottom:3px;background:rgba(255,255,255,.9);border-radius:6px;padding:2px 1px;text-align:center;font-size:.46rem;font-weight:800;color:#5e493e;white-space:nowrap;}
+.card-back{border:2px solid #fff;background:
+  radial-gradient(circle at 25% 24%,rgba(255,255,255,.5) 0 3px,transparent 4px),
+  radial-gradient(circle at 74% 71%,rgba(255,255,255,.4) 0 4px,transparent 5px),
+  linear-gradient(145deg,#85a8d1,#5d7fae);display:grid;place-items:center;}
+.card-back:before{content:'?';width:48%;aspect-ratio:1;border:2px solid rgba(255,255,255,.7);border-radius:50%;display:grid;place-items:center;color:#fff;font-family:'Kaisei Decol',serif;font-size:1.2rem;box-shadow:inset 0 0 0 3px rgba(255,255,255,.12);}
+
+#banner{margin:8px 0;background:#fff8e8;border:1px solid #efd9a8;border-radius:13px;padding:8px 10px;text-align:center;font-size:.66rem;font-weight:800;line-height:1.5;color:#6d5539;min-height:38px;display:grid;place-items:center;box-shadow:0 2px 7px rgba(80,50,30,.08);}
+.me-panel{margin-top:8px;}
+.memo-row{display:flex;align-items:center;gap:7px;margin:8px 0;flex-wrap:wrap;}
+.memo-stat{flex:1;background:#fff;border:1px solid #e5d7ca;border-radius:12px;padding:7px 10px;box-shadow:0 2px 6px rgba(80,50,30,.07);}
+.memo-stat .label{display:block;font-size:.52rem;color:#948078;font-weight:700;}
+.memo-stat .value{font-size:.75rem;font-weight:800;color:#a44767;}
+.memo-stat .value strong{font-size:1rem;}
+.memo-button{border:1px solid #e2d2c4;background:#fff;border-radius:12px;padding:9px 11px;font-size:.61rem;font-weight:800;color:#765c4e;cursor:pointer;box-shadow:0 2px 6px rgba(80,50,30,.07);}
+.memo-buttons{display:flex;gap:5px;}
+.memo-buttons .memo-button{padding:8px 9px;white-space:nowrap;}
+.answer-ledger{background:rgba(255,255,255,.9);border:1px solid #dfd2c6;border-radius:13px;padding:8px 10px;margin:8px 0;box-shadow:0 2px 7px rgba(80,50,30,.07);}
+.answer-ledger-head{display:flex;align-items:center;gap:5px;font-size:.62rem;font-weight:800;color:#6e574c;margin-bottom:5px;}
+.answer-ledger-head .hint{margin-left:auto;font-size:.47rem;color:#a08c82;font-weight:600;}
+.opponent-answer-list{list-style:none;max-height:145px;overflow-y:auto;}
+.opponent-answer-list li{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:7px;border-top:1px dashed #eaded3;padding:6px 2px;font-size:.56rem;line-height:1.4;}
+.opponent-answer-list li:first-child{border-top:0;}
+.opponent-answer-list .q-label{min-width:0;color:#705f57;font-weight:700;}
+.opponent-answer-list .q-answer{white-space:nowrap;background:#eef5ff;color:#476d9c;border-radius:10px;padding:3px 7px;font-weight:800;}
+.opponent-answer-list .initial-badge{display:inline-block;margin-right:4px;border-radius:8px;background:#f2e2fa;color:#7d4d91;padding:1px 4px;font-size:.45rem;vertical-align:1px;}
+.opponent-answer-list .answer-empty{display:block;text-align:center;color:#a08d83;padding:7px 2px;border:0;font-weight:600;}
+
+.action-title{text-align:center;font-size:.63rem;color:#7f695d;font-weight:800;margin:7px 0 6px;}
+.actions{display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;}
+.action{border:0;border-radius:15px;padding:10px 3px 9px;min-height:73px;color:#fff;cursor:pointer;box-shadow:0 4px 11px rgba(80,50,30,.16);font-size:.67rem;font-weight:800;transition:.14s;}
+.action:active:not(:disabled){transform:scale(.95);}
+.action .ico{display:block;font-size:1.25rem;margin-bottom:3px;}
+.action .sub{display:block;font-size:.49rem;opacity:.88;font-weight:500;margin-top:2px;}
+.action.q{background:linear-gradient(145deg,#e4779c,#ca587f);}
+.action.peek{background:linear-gradient(145deg,#5bbcab,#299482);}
+.action.guess{background:linear-gradient(145deg,#edae50,#d9853e);}
+.action:disabled{filter:grayscale(.45);opacity:.45;cursor:default;box-shadow:none;}
+.history{margin-top:9px;background:rgba(255,255,255,.63);border-radius:14px;padding:8px 10px;border:1px solid #eaded3;}
+.history summary{cursor:pointer;font-size:.61rem;font-weight:800;color:#806b60;list-style:none;}
+.history summary::-webkit-details-marker{display:none;}
+.history summary:after{content:'⌄';float:right;}
+.history[open] summary:after{content:'⌃';}
+#log{list-style:none;margin-top:7px;max-height:125px;overflow:auto;}
+#log li{font-size:.56rem;line-height:1.5;padding:5px 2px;border-top:1px dashed #e7d9cc;color:#76665f;}
+#log li:first-child{border-top:0;}
+
+.overlay{display:none;position:fixed;z-index:50;inset:0;background:rgba(48,35,30,.56);padding:15px;align-items:center;justify-content:center;}
+.overlay.show{display:flex;}
+.modal{width:min(100%,540px);max-height:min(88dvh,760px);background:var(--paper);border-radius:21px;box-shadow:0 16px 50px rgba(28,20,17,.3);overflow:hidden;display:flex;flex-direction:column;animation:pop .24s cubic-bezier(.2,1.25,.4,1);}
+@keyframes pop{from{transform:scale(.85);opacity:0}to{transform:scale(1);opacity:1}}
+.modal-head{padding:13px 15px 10px;display:flex;align-items:center;border-bottom:1px solid #eaded2;flex-shrink:0;}
+.modal-head h2{font-family:'Kaisei Decol',serif;font-size:.92rem;color:#674b3e;}
+.xbtn{margin-left:auto;width:31px;height:31px;border:0;border-radius:50%;background:#eee2d8;cursor:pointer;font-weight:800;color:#745e52;}
+.modal-body{padding:12px 14px;overflow-y:auto;-webkit-overflow-scrolling:touch;}
+.modal-note{font-size:.61rem;color:#856f64;line-height:1.55;margin-bottom:10px;}
+.question-deck-note{text-align:center;font-size:.56rem;color:#947e71;font-weight:700;margin:-2px 0 10px;}
+.question-hand{display:grid;grid-template-columns:1fr 1fr;gap:9px;align-items:stretch;}
+.question-card{position:relative;min-height:112px;border:3px solid rgba(255,255,255,.86);border-radius:15px;padding:28px 9px 10px;background:#fff;box-shadow:0 4px 11px rgba(75,48,33,.16);cursor:pointer;overflow:hidden;font-size:.66rem;font-weight:800;line-height:1.5;text-align:center;transition:.14s;animation:deal .28s both;}
+.question-card:nth-child(2){animation-delay:.04s}.question-card:nth-child(3){animation-delay:.08s}.question-card:nth-child(4){animation-delay:.12s}.question-card:nth-child(5){animation-delay:.16s}
+@keyframes deal{from{opacity:0;transform:translateY(-12px) rotate(-2deg)}to{opacity:1;transform:none}}
+.question-card:active{transform:scale(.96);}
+.question-card:before{content:'?';position:absolute;right:-6px;bottom:-25px;font-family:'Kaisei Decol',serif;font-size:5rem;color:rgba(255,255,255,.29);transform:rotate(12deg);}
+.question-card .q-tag{position:absolute;left:7px;top:7px;border-radius:12px;padding:3px 7px;background:rgba(255,255,255,.72);font-size:.49rem;font-weight:800;}
+.question-card .q-icon{display:block;font-size:1.35rem;margin:5px 0 4px;position:relative;}
+.question-card .q-text{position:relative;}
+.question-card.animal{background:linear-gradient(145deg,#ffe2ec,#f4b8cb);color:#8f385a;}
+.question-card.season{background:linear-gradient(145deg,#dff4ec,#abdccb);color:#2e7167;}
+.question-card.pair{background:linear-gradient(145deg,#fff0d1,#f3ca83);color:#81552c;}
+.question-card.single{background:linear-gradient(145deg,#e4edfb,#b8cbea);color:#3f6091;}
+.question-card.match{background:linear-gradient(145deg,#ffe6ef,#f0aec6);color:#8f3a5c;}
+.question-card.strong{background:linear-gradient(145deg,#f6e4ff,#d9aceb);color:#703e86;}
+.question-card .q-cost{display:block;position:relative;font-size:.48rem;margin-top:5px;color:#8b4770;}
+.question-hand .question-card:last-child:nth-child(odd){grid-column:1/-1;width:calc(50% - 5px);justify-self:center;}
+.variant-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;}
+.variant-btn{border:1.5px solid #ddcdbf;background:#fff;border-radius:12px;padding:10px 7px;min-height:50px;font-size:.6rem;font-weight:800;line-height:1.4;cursor:pointer;box-shadow:0 2px 6px rgba(75,48,33,.08);}
+.variant-btn:active{transform:scale(.96);}
+.reciprocal-box{display:none;background:#f5e8fb;border:1px solid #d9b5e8;border-radius:11px;padding:8px;margin:-4px 0 10px;font-size:.58rem;color:#754785;font-weight:800;line-height:1.5;}
+.reciprocal-box.show{display:block;}
+.matrix{display:grid;grid-template-columns:48px repeat(4,1fr);gap:5px;align-items:stretch;margin-top:4px;}
+.matrix-head,.matrix-row-head{display:grid;place-items:center;text-align:center;font-size:.51rem;font-weight:800;color:#795f52;line-height:1.25;gap:3px;}
+.matrix-head{background:#f2e7dc;border-radius:9px;padding:5px 2px;}
+.matrix-row-head{background:#fff;border:1px solid #eadbcf;border-radius:9px;padding:3px;}
+.count-note{width:32px;height:23px;border:1.5px solid #d9beaa;border-radius:7px;background:#fffaf4;text-align:center;font-family:inherit;font-size:.65rem;font-weight:800;color:#b34f73;outline:none;}
+.count-note:focus{border-color:#db7195;box-shadow:0 0 0 2px rgba(219,113,149,.16);}
+.memo-cell{position:relative;border:2px solid #eadbcf;border-radius:10px;padding:0;overflow:hidden;background:#eee;aspect-ratio:1/1.12;cursor:pointer;box-shadow:0 2px 5px rgba(70,45,30,.1);}
+.memo-cell img{width:100%;height:100%;object-fit:cover;display:block;}
+.memo-cell .memo-mark{position:absolute;inset:0;display:grid;place-items:center;font-size:1.65rem;font-weight:800;text-shadow:0 2px 4px rgba(0,0,0,.35);}
+.memo-cell.manual-yes{border-color:#44a980;box-shadow:0 0 0 2px #bdebd9;}
+.memo-cell.manual-yes .memo-mark{color:#fff;background:rgba(39,151,107,.2);}
+.memo-cell.manual-no{filter:grayscale(.65);opacity:.62;border-color:#9d928d;}
+.memo-cell.manual-no .memo-mark{color:#fff;background:rgba(65,55,50,.38);}
+.matrix-legend{display:flex;flex-wrap:wrap;gap:5px 11px;margin:10px 0 8px;font-size:.53rem;color:#806b60;font-weight:700;}
+.matrix-legend b{font-size:.68rem;}
+.memo-reset{display:block;margin-left:auto;border:1px solid #dfd1c4;background:#fff;border-radius:10px;padding:6px 9px;font-size:.54rem;font-weight:800;color:#806a5f;cursor:pointer;}
+
+.answer-box{text-align:center;padding:6px 2px 2px;}
+.answer-q{font-size:.7rem;color:#755e53;font-weight:700;line-height:1.6;}
+.answer-who{font-size:.58rem;color:#9c8980;margin-top:10px;}
+.answer-big{font-family:'Kaisei Decol',serif;font-size:1.6rem;color:#c54f78;margin:3px 0 12px;}
+.narrow{background:#fff0f5;border-radius:11px;padding:7px;font-size:.58rem;color:#9a5270;font-weight:800;margin-bottom:12px;}
+.continue-btn{width:100%;border:0;border-radius:18px;background:linear-gradient(135deg,#e46e97,#d65a84);color:#fff;padding:11px;font-size:.7rem;font-weight:800;cursor:pointer;}
+.peek-card-large{width:min(52vw,185px);margin:4px auto 10px;border-radius:15px;overflow:hidden;border:4px solid #fff;box-shadow:0 6px 18px rgba(70,45,30,.22);position:relative;}
+.peek-card-large img{width:100%;display:block;}
+.peek-desc{text-align:center;font-size:.77rem;font-weight:800;color:#5e493e;margin-bottom:11px;}
+.private-note{text-align:center;font-size:.56rem;color:#a57250;margin-bottom:8px;}
+.seen-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:7px;}
+.seen-grid .card{width:100%;}
+.initial-seen-grid{display:grid;grid-template-columns:repeat(2,minmax(0,110px));justify-content:center;gap:10px;margin:8px auto 13px;}
+.initial-seen-grid .card{width:100%;}
+.initial-rule{background:#fff5dc;border:1px solid #ead09a;border-radius:11px;padding:9px 10px;margin:0 0 11px;font-size:.59rem;color:#795d31;font-weight:800;line-height:1.55;}
+.empty-note{text-align:center;color:#9d8980;font-size:.66rem;padding:24px 5px;}
+
+.guess-status{display:flex;align-items:center;background:#fff;border:1px solid #e4d5c8;border-radius:12px;padding:7px 10px;margin-bottom:9px;font-size:.61rem;font-weight:800;color:#7a655a;}
+.guess-status strong{font-size:.9rem;color:#d16a43;margin:0 3px;}
+.autofill{margin-left:auto;border:0;border-radius:10px;background:#fff0d5;color:#9a6727;padding:5px 7px;font-size:.53rem;font-weight:800;cursor:pointer;}
+.guess-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;}
+.guess-card{position:relative;border:3px solid transparent;border-radius:10px;padding:0;overflow:hidden;background:#eee;cursor:pointer;aspect-ratio:654/911;box-shadow:0 2px 6px rgba(70,45,30,.12);}
+.guess-card img{width:100%;height:100%;object-fit:cover;display:block;}
+.guess-card .g-label{position:absolute;bottom:2px;left:2px;right:2px;background:rgba(255,255,255,.9);border-radius:5px;padding:2px 0;font-size:.43rem;font-weight:800;}
+.guess-card.selected{border-color:#e79732;box-shadow:0 0 0 2px #ffd27d,0 4px 10px rgba(180,100,30,.25);}
+.guess-card.selected:after{content:'✓';position:absolute;right:3px;top:3px;width:20px;height:20px;border-radius:50%;background:#e58c2e;color:#fff;display:grid;place-items:center;font-size:.7rem;font-weight:800;}
+.guess-card.impossible{filter:grayscale(.85);opacity:.38;cursor:default;}
+.guess-card.impossible:after{content:'×';position:absolute;inset:0;display:grid;place-items:center;color:#fff;background:rgba(75,60,53,.28);font-size:1.2rem;font-weight:800;}
+.guess-actions{display:flex;gap:7px;margin-top:11px;}
+.clear-btn{border:1px solid #dfd2c7;background:#fff;border-radius:15px;padding:10px 12px;font-size:.62rem;font-weight:800;cursor:pointer;}
+.declare-btn{flex:1;border:0;border-radius:15px;padding:10px;background:linear-gradient(135deg,#edae50,#d9853e);color:#fff;font-size:.66rem;font-weight:800;cursor:pointer;}
+.declare-btn:disabled{opacity:.42;filter:grayscale(.6);cursor:default;}
+.declare-btn.armed{background:linear-gradient(135deg,#d95a62,#ae364e);animation:pulse 1s infinite alternate;}
+@keyframes pulse{to{box-shadow:0 0 0 5px rgba(217,90,98,.14)}}
+
+.result-modal{text-align:center;padding:19px 16px 17px;display:block;overflow-y:auto;}
+.result-icon{font-size:2.2rem;}
+.result-modal h2{font-family:'Kaisei Decol',serif;font-size:1.18rem;margin:3px 0;color:#b7466f;}
+.result-modal.lose h2{color:#4f73a5;}
+.result-reason{font-size:.64rem;color:#7e6c63;line-height:1.55;margin-bottom:13px;}
+.declared-answer{background:#fff5da;border:2px solid #edc56d;border-radius:13px;padding:8px;margin-bottom:9px;}
+.declared-answer h3{font-size:.6rem;margin-bottom:6px;color:#825b28;text-align:center;}
+.reveal-cols{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:13px;text-align:left;}
+.reveal-col{background:#fff;border:1px solid #e7d9cd;border-radius:13px;padding:8px;}
+.reveal-col h3{font-size:.58rem;margin-bottom:6px;color:#765f53;text-align:center;}
+.mini-list{display:flex;justify-content:center;gap:3px;}
+.mini-list .card{width:18%;border-width:1px;border-radius:6px;box-shadow:0 1px 3px rgba(70,45,30,.15);}
+.mini-list .card .name,.mini-list .card .season-dot{display:none;}
+.result-record{font-size:.58rem;color:#9b8980;margin-bottom:11px;}
+.result-buttons{display:flex;gap:8px;}
+.result-buttons button{flex:1;border:0;border-radius:18px;padding:10px;font-size:.66rem;font-weight:800;cursor:pointer;}
+.setup-again{background:#eee5dd;color:#745f54;}
+.play-again{background:linear-gradient(135deg,#e66f98,#e9a74e);color:#fff;}
+.confetti{position:fixed;top:-30px;z-index:70;pointer-events:none;font-size:1.2rem;animation:fall linear forwards;}
+@keyframes fall{to{transform:translateY(110dvh) rotate(650deg);opacity:.7}}
+
+@media (min-width:560px){
+  #game-screen{padding-top:13px;}
+  .battle{display:grid;grid-template-columns:1fr 1fr;gap:10px;align-items:start;}
+  .me-panel{margin-top:0;}
+  #banner{grid-column:1/-1;grid-row:2;margin:0;}
+  .ai-panel{grid-column:2;grid-row:1;}
+  .me-panel{grid-column:1;grid-row:1;}
+  .card,.card-back{width:min(9.3vw,62px);}
+  .hand{min-height:70px;}
+  .memo-row{margin-top:10px;}
+  .actions{max-width:560px;margin:0 auto;}
+}
+@media (min-width:900px){
+  .game-layout{display:grid;grid-template-columns:minmax(0,730px) minmax(300px,360px);gap:12px;align-items:start;}
+  .matrix-dock{position:sticky;top:10px;margin-top:0;}
+}
+@media (max-width:410px){
+  .memo-stat{width:100%;flex-basis:100%;}
+  .memo-buttons{width:100%;}
+  .memo-buttons .memo-button{flex:1;}
+  .matrix{grid-template-columns:43px repeat(4,1fr);gap:4px;}
+  .matrix-dock{padding:9px 7px;}
+  .count-note{width:28px;height:22px;}
+}
+</style>
+</head>
+<body>
+<header>
+  <h1>🔎 四季のなぞあて <small>3まい版</small></h1>
+  <p>3まいの ひみつを 質問で見やぶろう</p>
+</header>
+
+<main id="setup-screen">
+  <div class="record" id="record">せいせき：0勝 0敗</div>
+  <section class="hero">
+    <div class="hero-title">あいての <b>3まい</b> は なに？</div>
+    <p>質問の答えと、山札で見つけたカードを手がかりに<br>あいての手札を ぴったり当てよう。</p>
+    <div class="motif-strip" aria-label="カードの種類">
+      <span>🦆</span><span>🐻</span><span>🐿️</span><span>🐰</span>
+    </div>
+  </section>
+
+  <div class="setup-label">🤖 AIのひらめき</div>
+  <div class="choice-row">
+    <button class="choice" id="lv1" onclick="setLevel(1)"><span class="big">🐣</span>みならい<span class="sub">質問はのんびり</span></button>
+    <button class="choice" id="lv2" onclick="setLevel(2)"><span class="big">🦊</span>ふつう<span class="sub">よく考えて質問</span></button>
+    <button class="choice" id="lv3" onclick="setLevel(3)"><span class="big">🦉</span>めいたんてい<span class="sub">毎手番、最善手を計算</span></button>
+  </div>
+
+  <div class="setup-label">🎬 どちらから？</div>
+  <div class="choice-row first-row">
+    <button class="choice" id="fp" onclick="setFirst('p')">😊 あなた</button>
+    <button class="choice" id="fa" onclick="setFirst('a')">🤖 AI</button>
+    <button class="choice" id="fr" onclick="setFirst('r')">🎲 ランダム</button>
+  </div>
+
+  <div class="setup-label">🙋 （　）を えらぶのは？</div>
+  <div class="choice-row">
+    <button class="choice" id="vm-asker" onclick="setVariantMode('asker')"><span class="big">🙋</span>聞く側<span class="sub">ふつうのルール</span></button>
+    <button class="choice" id="vm-answerer" onclick="setVariantMode('answerer')"><span class="big">🤐</span>答える側<span class="sub">いじわるな答えを えらべる</span></button>
+  </div>
+
+  <div class="setup-label">🃏 質問カードの面</div>
+  <div class="choice-row">
+    <button class="choice" id="dm-easy" onclick="setDeck('easy')"><span class="big">🌱</span>やさしい面<span class="sub">かぞえればわかる</span></button>
+    <button class="choice" id="dm-hard" onclick="setDeck('hard')"><span class="big">🔥</span>上級者面<span class="sub">偶数・奇数や組み合わせ</span></button>
+    <button class="choice" id="dm-mix" onclick="setDeck('mix')"><span class="big">🎴</span>ミックス<span class="sub">1まいごとに どちらかの面</span></button>
+  </div>
+
+  <section class="rules">
+    <h2>📖 あそびかた</h2>
+    <p><span class="num">1</span>動物×季節の16まいから、あなたとAIに <b>3まいずつ</b>配るよ。</p>
+    <p><span class="num">2</span>残った山札から、おたがいに<b>2まいずつ自分だけで確認</b>して取りのぞくよ。残り6まいがゲーム中の山札。</p>
+    <p><span class="num">3</span>先手の最初は、動物か季節の枚数を聞く<b>相互回答質問</b>。質問した人も同じ問いに答えるよ。</p>
+    <p><span class="num">4</span>その後の手番では、<b>予想する・3択の質問カードから1枚選ぶ・山札を1枚見る</b>のどれか1つだけ。</p>
+    <p><span class="num">5</span>質問カードは15まいで、<b>🌱やさしい面と🔥上級者面の両面</b>。同じカードは1ゲームに1回だけ使えるよ。</p>
+    <p><span class="num">6</span>動物には<b>じぶんの季節</b>があるよ（🐰はる・🦆なつ・🐿️あき・🐻ふゆ）。ぴったりそろった4まいが<b>💞ぴったりカード</b>。</p>
+    <p><span class="num">5</span>あいての3まいがわかったら、次の自分の手番に「これだ！」。全部合えば勝ち、<span class="danger">1まいでも違うと負け</span>だよ。</p>
+  </section>
+  <button class="start-btn" onclick="startGame()">▶ なぞあて スタート！</button>
+  <p class="analytics-note">質問をより楽しくするため、質問カードの表示・選択状況を匿名で記録します。この集計には手札や名前は記録しません。</p>
+</main>
+
+<main id="game-screen">
+  <div class="game-layout">
+  <div class="game-main">
+  <div class="gamebar">
+    <button class="small-btn" onclick="quitGame()">← やめる</button>
+    <div class="turn-pill" id="turn-pill">あなたの番</div>
+    <div class="deck-pill">山札 <span id="deck-count">6</span>枚</div>
+  </div>
+
+  <div class="battle">
+    <section class="player-panel ai-panel" id="ai-panel">
+      <div class="panel-head"><span class="who">🤖 AIのひみつ手札</span><span class="clue">見た山札：<span id="ai-seen-count">0</span>枚</span></div>
+      <div class="hand" id="ai-hand"></div>
+    </section>
+
+    <div id="banner">どの手がかりを集める？</div>
+
+    <section class="player-panel me-panel" id="me-panel">
+      <div class="panel-head"><span class="who">😊 あなたの手札</span><span class="clue">この3まいはAIにひみつ</span></div>
+      <div class="hand" id="player-hand"></div>
+    </section>
+  </div>
+
+  <div class="memo-row">
+    <div class="memo-stat"><span class="label">AIの手札の のこり候補</span><span class="value"><strong id="possible-count">？</strong><span id="possible-unit"> 非表示</span></span></div>
+    <div class="memo-buttons">
+      <button class="memo-button" id="candidate-assist-button" onclick="toggleCandidateAssist()">🔎 候補を表示</button>
+      <button class="memo-button" onclick="openSeen()">👀 山札 <span id="my-seen-count">0</span>枚</button>
+    </div>
+  </div>
+
+  <section class="answer-ledger" aria-label="AIが答えた質問の一覧">
+    <div class="answer-ledger-head">💬 AIが答えた質問 <span class="hint">新しい回答が上</span></div>
+    <ul class="opponent-answer-list" id="opponent-answer-list" aria-live="polite"></ul>
+  </section>
+
+  <div class="action-title" id="action-title">手番の行動を 1つえらぼう</div>
+  <div class="actions">
+    <button class="action q" id="question-action" onclick="openQuestions()"><span class="ico">💬</span>質問する<span class="sub" id="question-action-sub">ランダムな3枚から選ぶ</span></button>
+    <button class="action peek" id="peek-action" onclick="playerPeek()"><span class="ico">🃏</span>山札を見る<span class="sub">1まいを自分だけ確認</span></button>
+    <button class="action guess" id="guess-action" onclick="openGuess()"><span class="ico">🎯</span>これだ！<span class="sub">3まいを当てる</span></button>
+  </div>
+
+  <details class="history">
+    <summary>📝 質問と行動のきろく</summary>
+    <ul id="log"></ul>
+  </details>
+  </div>
+
+  <aside class="matrix-dock" aria-label="推理マトリックス">
+    <h2 class="matrix-dock-title">📝 推理マトリックス</h2>
+    <p class="matrix-dock-note">数字欄には、その動物・季節の枚数をメモできます。カードはタップで「○ → × → 空欄」。</p>
+    <div class="matrix" id="matrix"></div>
+    <div class="matrix-legend"><span><b style="color:#29976b">○</b> ありそう</span><span><b>×</b> ない</span><span>空欄 不明</span></div>
+    <button class="memo-reset" onclick="resetMatrixMemo()">メモを全部消す</button>
+  </aside>
+  </div>
+</main>
+
+<div class="overlay" id="question-overlay" role="dialog" aria-modal="true" aria-labelledby="question-title">
+  <div class="modal">
+    <div class="modal-head"><h2 id="question-title">💬 どれを聞く？</h2><button class="xbtn" onclick="closeOverlay('question-overlay')" aria-label="閉じる">×</button></div>
+    <div class="modal-body">
+      <p class="modal-note" id="question-modal-note">質問の山からランダムに出た3枚です。（　）の中身はカードを選んだあとに決められます。</p>
+      <div class="question-deck-note" id="question-deck-note"></div>
+      <div class="question-hand" id="question-hand"></div>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="variant-overlay" role="dialog" aria-modal="true">
+  <div class="modal">
+    <div class="modal-head"><h2 id="variant-title">🔎 何を入れる？</h2><button class="xbtn" onclick="backToQuestionHand()" aria-label="戻る">←</button></div>
+    <div class="modal-body">
+      <p class="modal-note" id="variant-note"></p>
+      <div class="variant-grid" id="variant-grid"></div>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="answer-overlay" role="dialog" aria-modal="true">
+  <div class="modal">
+    <div class="modal-head"><h2>💬 AIの答え</h2></div>
+    <div class="modal-body answer-box">
+      <div class="answer-q" id="answer-question"></div>
+      <div class="answer-who">🤖 AIの答えは……</div>
+      <div class="answer-big" id="answer-value"></div>
+      <div class="reciprocal-box" id="reciprocal-answer"></div>
+      <div class="narrow" id="answer-narrow"></div>
+      <button class="continue-btn" onclick="finishHumanTurn()">覚えた！　AIの番へ →</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="peek-overlay" role="dialog" aria-modal="true">
+  <div class="modal">
+    <div class="modal-head"><h2>🃏 山札の手がかり</h2></div>
+    <div class="modal-body">
+      <div class="private-note">🤫 このカードは あなただけが見たよ</div>
+      <div class="peek-card-large"><img id="peek-img" src="" alt=""></div>
+      <div class="peek-desc" id="peek-desc"></div>
+      <div class="narrow" id="peek-narrow"></div>
+      <button class="continue-btn" onclick="finishHumanTurn()">覚えた！　AIの番へ →</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="initial-seen-overlay" role="dialog" aria-modal="true">
+  <div class="modal">
+    <div class="modal-head"><h2>👀 最初のひみつ情報</h2></div>
+    <div class="modal-body">
+      <div class="private-note">🤫 この2まいは あなただけが見られます</div>
+      <div class="initial-seen-grid" id="initial-seen-grid"></div>
+      <div class="initial-rule">この2まいはAIの手札にはありません。AIも別の2まいを自分だけで確認しています。</div>
+      <button class="continue-btn" onclick="finishInitialClues()">2まいを覚えて ゲーム開始！</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="seen-overlay" role="dialog" aria-modal="true">
+  <div class="modal">
+    <div class="modal-head"><h2>👀 あなたが見た山札</h2><button class="xbtn" onclick="closeOverlay('seen-overlay')" aria-label="閉じる">×</button></div>
+    <div class="modal-body"><p class="modal-note">ここにあるカードは山札から出たので、AIの手札には入っていないよ。</p><div class="seen-grid" id="seen-grid"></div></div>
+  </div>
+</div>
+
+<div class="overlay" id="guess-overlay" role="dialog" aria-modal="true">
+  <div class="modal">
+    <div class="modal-head"><h2>🎯 AIの3まいは これだ！</h2><button class="xbtn" onclick="closeOverlay('guess-overlay')" aria-label="閉じる">×</button></div>
+    <div class="modal-body">
+      <p class="modal-note" id="guess-modal-note">3まいを選んで宣言しよう。</p>
+      <div class="guess-status">えらんだカード：<strong id="guess-selected">0</strong>/ 3 <button class="autofill" id="autofill" onclick="fillOnlyCandidate()" style="display:none">唯一の候補をセット</button></div>
+      <div class="guess-grid" id="guess-grid"></div>
+      <div class="guess-actions"><button class="clear-btn" onclick="clearGuess()">選びなおす</button><button class="declare-btn" id="declare-btn" onclick="declareGuess()" disabled>3まい選んでね</button></div>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="result-overlay" role="dialog" aria-modal="true">
+  <div class="modal result-modal" id="result-modal">
+    <div class="result-icon" id="result-icon"></div>
+    <h2 id="result-title"></h2>
+    <div class="result-reason" id="result-reason"></div>
+    <div class="declared-answer"><h3 id="declared-title">🎯 あなたの回答</h3><div class="mini-list" id="result-declared"></div></div>
+    <div class="reveal-cols">
+      <div class="reveal-col"><h3>😊 あなたの手札</h3><div class="mini-list" id="result-player"></div></div>
+      <div class="reveal-col"><h3>🤖 AIの手札</h3><div class="mini-list" id="result-ai"></div></div>
+    </div>
+    <div class="result-record" id="result-record"></div>
+    <div class="result-buttons"><button class="setup-again" onclick="quitGame()">せってい</button><button class="play-again" onclick="startGame()">もういちど！</button></div>
+  </div>
+</div>
+
+<script>
+'use strict';
+
+const HAND_SIZE=3;
+const QUESTION_CHOICES=3;
+const INITIAL_SEEN_COUNT=2;
+const ANALYTICS_ENDPOINT='question_log.php';
+const ANALYTICS_SESSION_ID=makeAnalyticsId();
+
+function makeAnalyticsId(){
+  try{if(crypto?.randomUUID)return crypto.randomUUID();}catch(e){}
+  return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2,12)}`;
+}
+function trackEvent(event,details={}){
+  if(location.protocol==='file:'||typeof fetch!=='function')return;
+  const payload={event,sessionId:ANALYTICS_SESSION_ID,gameId:G?.gameId||'',handSize:HAND_SIZE,...details};
+  try{fetch(ANALYTICS_ENDPOINT,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload),credentials:'same-origin',keepalive:true}).catch(()=>{});}catch(e){}
+}
+
+// ── カード ──
+const MOTIFS=[
+  {id:1,n:'アヒル',icon:'🦆',group:'animal'},
+  {id:2,n:'クマ',icon:'🐻',group:'animal'},
+  {id:3,n:'リス',icon:'🐿️',group:'animal'},
+  {id:4,n:'ウサギ',icon:'🐰',group:'animal'}
+];
+const SEASONS=[
+  {id:1,n:'はる',icon:'🌸',cls:'sp',color:'#df6b94'},
+  {id:2,n:'なつ',icon:'🌊',cls:'su',color:'#33a796'},
+  {id:3,n:'あき',icon:'🍁',cls:'au',color:'#df843f'},
+  {id:4,n:'ふゆ',icon:'⛄',cls:'wi',color:'#5484ba'}
+];
+const CARDS=[];
+for(const motif of MOTIFS)for(const season of SEASONS){
+  const index=(motif.id-1)*4+(season.id-1);
+  CARDS.push({index,motif,season});
+}
+const bit=i=>(1<<i)>>>0;
+const maskOf=arr=>arr.reduce((m,i)=>(m|bit(i))>>>0,0);
+const has=(mask,i)=>!!((mask>>>i)&1);
+function popcount(x){x>>>=0;x=x-((x>>>1)&0x55555555);x=(x&0x33333333)+((x>>>2)&0x33333333);return (((x+(x>>>4))&0x0F0F0F0F)*0x01010101)>>>24;}
+const imgSrc=i=>`イラスト/${CARDS[i].motif.id}-${CARDS[i].season.id}.jpg`;
+const cardName=i=>`${CARDS[i].season.n}の${CARDS[i].motif.n}`;
+
+const TYPE_MASKS=MOTIFS.map(m=>maskOf(CARDS.filter(c=>c.motif.id===m.id).map(c=>c.index)));
+const SEASON_MASKS=SEASONS.map(s=>maskOf(CARDS.filter(c=>c.season.id===s.id).map(c=>c.index)));
+
+function makeQuestions(){
+  const qs=[];
+  const yesNo=v=>v?'そうだよ！':'ちがうよ';
+  const variant=(id,label,evalFn,fmt=yesNo)=>({id,label,eval:evalFn,fmt});
+  // no＝カード番号（表と裏で同じ番号）。side は 'easy'＝表（初心者面）、'hard'＝裏（上級者面）。
+  const add=(no,side,key,label,category,variants,reciprocal=false)=>qs.push({no,side,key,label,category,variants,reciprocal});
+  const pairs=[];
+  for(let a=0;a<4;a++)for(let b=a+1;b<4;b++)pairs.push([a,b]);
+  const ordered=[];
+  for(let a=0;a<4;a++)for(let b=0;b<4;b++)if(a!==b)ordered.push([a,b]);
+  // 4種の合計は手札の枚数で固定なので「AとB」と「残り2種」は必ず同じ答えになる。重複を避けて3組だけ使う。
+  const oddPairs=[[0,1],[0,2],[0,3]];
+  // 季節はめぐる：となりあう4組と、向かいあう2組。
+  const ADJ=[[0,1],[1,2],[2,3],[3,0]];
+  const OPP=[[0,2],[1,3]];
+  // 動物には「じぶんの季節」がある：🐰ウサギ＝はる／🦆アヒル＝なつ／🐿️リス＝あき／🐻クマ＝ふゆ
+  const MATCH=[1,3,2,0];
+  const MATCH_INDEX=MOTIFS.map((m,i)=>i*4+MATCH[i]);
+  const MATCH_MASK=maskOf(MATCH_INDEX);
+  const cnt=(hand,mask)=>popcount((hand&mask)>>>0);
+  const animalKinds=hand=>TYPE_MASKS.filter(m=>cnt(hand,m)>0).length;
+  const seasonKinds=hand=>SEASON_MASKS.filter(m=>cnt(hand,m)>0).length;
+  const matchCount=hand=>cnt(hand,MATCH_MASK);
+  const mi=i=>MOTIFS[i].icon, mn=i=>MOTIFS[i].n, si=i=>SEASONS[i].icon, sn=i=>SEASONS[i].n;
+
+  // ── 1・2：ひとつの動物／季節を見る ──
+  add(1,'easy','animal-any','（動物）はいる？','動物',MOTIFS.map((x,i)=>variant(`a${i}`,`${mi(i)} ${mn(i)}はいる？`,hand=>cnt(hand,TYPE_MASKS[i])>0?1:0)));
+  add(1,'hard','animal-even','（動物）は偶数匹？','動物',MOTIFS.map((x,i)=>variant(`a${i}`,`${mi(i)} ${mn(i)}は偶数匹？（0匹もふくむ）`,hand=>cnt(hand,TYPE_MASKS[i])%2===0?1:0)));
+  add(2,'easy','season-any','（季節）はある？','季節',SEASONS.map((x,i)=>variant(`s${i}`,`${si(i)} ${sn(i)}はある？`,hand=>cnt(hand,SEASON_MASKS[i])>0?1:0)));
+  add(2,'hard','season-even','（季節）は偶数枚？','季節',SEASONS.map((x,i)=>variant(`s${i}`,`${si(i)} ${sn(i)}は偶数枚？（0枚もふくむ）`,hand=>cnt(hand,SEASON_MASKS[i])%2===0?1:0)));
+
+  // ── 3・4：ちょうど1つ／偶奇 ──
+  add(3,'easy','animal-one','（動物）はちょうど1匹？','動物',MOTIFS.map((x,i)=>variant(`a${i}`,`${mi(i)} ${mn(i)}はちょうど1匹？`,hand=>cnt(hand,TYPE_MASKS[i])===1?1:0)));
+  add(3,'hard','animal-odd','（動物A）＋（動物B）は奇数匹？','くらべる',oddPairs.map(([a,b])=>variant(`a${a}-${b}`,`${mi(a)}${mn(a)}と ${mi(b)}${mn(b)}は あわせて奇数匹？`,hand=>cnt(hand,(TYPE_MASKS[a]|TYPE_MASKS[b])>>>0)%2)));
+  add(4,'easy','season-one','（季節）はちょうど1枚？','季節',SEASONS.map((x,i)=>variant(`s${i}`,`${si(i)} ${sn(i)}はちょうど1枚？`,hand=>cnt(hand,SEASON_MASKS[i])===1?1:0)));
+  add(4,'hard','season-odd','（季節A）＋（季節B）は奇数枚？','くらべる',oddPairs.map(([a,b])=>variant(`s${a}-${b}`,`${si(a)}${sn(a)}と ${si(b)}${sn(b)}は あわせて奇数枚？`,hand=>cnt(hand,(SEASON_MASKS[a]|SEASON_MASKS[b])>>>0)%2)));
+
+  // ── 5・6：季節のめぐり（となり／向かい） ──
+  add(5,'easy','adj-both','となりあう季節を どっちも持ってる？','季節',ADJ.map(([a,b])=>variant(`s${a}-${b}`,`${si(a)}${sn(a)}と ${si(b)}${sn(b)}は どっちもある？`,hand=>(cnt(hand,SEASON_MASKS[a])>0&&cnt(hand,SEASON_MASKS[b])>0)?1:0)));
+  add(5,'hard','adj-xor','となりあう季節、あるのは片方だけ？','季節',ADJ.map(([a,b])=>variant(`s${a}-${b}`,`${si(a)}${sn(a)}と ${si(b)}${sn(b)}、あるのは 片方だけ？`,hand=>((cnt(hand,SEASON_MASKS[a])>0)!==(cnt(hand,SEASON_MASKS[b])>0))?1:0)));
+  add(6,'easy','opp-both','向かいあう季節を どっちも持ってる？','季節',OPP.map(([a,b])=>variant(`s${a}-${b}`,`${si(a)}${sn(a)}と ${si(b)}${sn(b)}は どっちもある？`,hand=>(cnt(hand,SEASON_MASKS[a])>0&&cnt(hand,SEASON_MASKS[b])>0)?1:0)));
+  add(6,'hard','opp-xor','向かいあう季節、あるのは片方だけ？','季節',OPP.map(([a,b])=>variant(`s${a}-${b}`,`${si(a)}${sn(a)}と ${si(b)}${sn(b)}、あるのは 片方だけ？`,hand=>((cnt(hand,SEASON_MASKS[a])>0)!==(cnt(hand,SEASON_MASKS[b])>0))?1:0)));
+
+  // ── 7・8：ぴったりカード（動物とじぶんの季節がそろった札） ──
+  add(7,'easy','match-any','ぴったりカードを持ってる？','ぴったり',[variant('any','💞 ぴったりカードを 持ってる？',hand=>matchCount(hand)>0?1:0)]);
+  add(7,'hard','match-even','ぴったりカードは偶数枚？','ぴったり',[variant('even','💞 ぴったりカードは 偶数枚？（0枚もふくむ）',hand=>matchCount(hand)%2===0?1:0)]);
+  add(8,'easy','match-which','（動物）の ぴったりカードはある？','ぴったり',MOTIFS.map((x,i)=>variant(`m${i}`,`${si(MATCH[i])}${mi(i)} ${sn(MATCH[i])}の${mn(i)}はある？`,hand=>has(hand,MATCH_INDEX[i])?1:0)));
+  add(8,'hard','match-more','（動物）は じぶんの季節より多い？','ぴったり',MOTIFS.map((x,i)=>variant(`m${i}`,`${mi(i)}${mn(i)}は ${si(MATCH[i])}${sn(MATCH[i])}より多い？`,hand=>cnt(hand,TYPE_MASKS[i])>cnt(hand,SEASON_MASKS[MATCH[i]])?1:0)));
+
+  // ── 9・10：一番多い／動物×季節 ──
+  add(9,'easy','animal-most','（動物）が一番多い？','動物',MOTIFS.map((x,i)=>variant(`a${i}`,`${mi(i)} ${mn(i)}が一番多い？（同率もOK）`,hand=>{const c=TYPE_MASKS.map(m=>cnt(hand,m));return c[i]===Math.max(...c)?1:0;})));
+  add(9,'hard','cross-same','（動物）と（季節）は同じ枚数？','くらべる',MOTIFS.flatMap((a,ai)=>SEASONS.map((s,sj)=>variant(`x${ai}-${sj}`,`${mi(ai)}${mn(ai)}と ${si(sj)}${sn(sj)}は 同じ枚数？`,hand=>cnt(hand,TYPE_MASKS[ai])===cnt(hand,SEASON_MASKS[sj])?1:0))));
+  add(10,'easy','season-most','（季節）が一番多い？','季節',SEASONS.map((x,i)=>variant(`s${i}`,`${si(i)} ${sn(i)}が一番多い？（同率もOK）`,hand=>{const c=SEASON_MASKS.map(m=>cnt(hand,m));return c[i]===Math.max(...c)?1:0;})));
+  add(10,'hard','cross-both','（動物）がいて（季節）もある？','くらべる',MOTIFS.flatMap((a,ai)=>SEASONS.map((s,sj)=>variant(`x${ai}-${sj}`,`${mi(ai)}${mn(ai)}がいて ${si(sj)}${sn(sj)}もある？（べつの札でOK）`,hand=>(cnt(hand,TYPE_MASKS[ai])>0&&cnt(hand,SEASON_MASKS[sj])>0)?1:0))));
+
+  // ── 11・12：種類の数 ──
+  add(11,'easy','animal-kinds','動物は何種類いる？','動物',[variant('kinds','🐾 動物は何種類いる？',animalKinds,v=>`${v}種類`)]);
+  add(11,'hard','kinds-same','動物と季節、種類の数は同じ？','くらべる',[variant('kinds','🐾🎨 動物の種類数と 季節の種類数は 同じ？',hand=>animalKinds(hand)===seasonKinds(hand)?1:0)]);
+  add(12,'easy','season-kinds','季節は何種類ある？','季節',[variant('kinds','🎨 季節は何種類ある？',seasonKinds,v=>`${v}種類`)]);
+  add(12,'hard','season-kinds-even','季節の種類数は偶数？','季節',[variant('kinds','🎨 季節の種類数は 偶数？',hand=>seasonKinds(hand)%2===0?1:0)]);
+
+  // ── 13・14・15：ふたつの動物をくらべる ──
+  add(13,'easy','animal-more','（動物A）は（動物B）より多い？','くらべる',ordered.map(([a,b])=>variant(`a${a}-${b}`,`${mi(a)}${mn(a)}は ${mi(b)}${mn(b)}より多い？`,hand=>cnt(hand,TYPE_MASKS[a])>cnt(hand,TYPE_MASKS[b])?1:0)));
+  add(13,'hard','animal-none-but','（動物A）はいなくて（動物B）はいる？','くらべる',ordered.map(([a,b])=>variant(`a${a}-${b}`,`${mi(a)}${mn(a)}は1匹もいなくて ${mi(b)}${mn(b)}はいる？`,hand=>(cnt(hand,TYPE_MASKS[a])===0&&cnt(hand,TYPE_MASKS[b])>0)?1:0)));
+  add(14,'easy','animal-same','（動物A）と（動物B）は同じ数？','くらべる',pairs.map(([a,b])=>variant(`a${a}-${b}`,`${mi(a)}${mn(a)}と ${mi(b)}${mn(b)}は 同じ数？`,hand=>cnt(hand,TYPE_MASKS[a])===cnt(hand,TYPE_MASKS[b])?1:0)));
+  add(14,'hard','cross-xor','（動物）と（季節）、あるのは片方だけ？','くらべる',MOTIFS.flatMap((a,ai)=>SEASONS.map((s,sj)=>variant(`x${ai}-${sj}`,`${mi(ai)}${mn(ai)}と ${si(sj)}${sn(sj)}、あるのは 片方だけ？`,hand=>((cnt(hand,TYPE_MASKS[ai])>0)!==(cnt(hand,SEASON_MASKS[sj])>0))?1:0))));
+  add(15,'easy','animal-both','（動物A）と（動物B）はどっちもいる？','くらべる',pairs.map(([a,b])=>variant(`a${a}-${b}`,`${mi(a)}${mn(a)}と ${mi(b)}${mn(b)}は どっちもいる？`,hand=>(cnt(hand,TYPE_MASKS[a])>0&&cnt(hand,TYPE_MASKS[b])>0)?1:0)));
+  add(15,'hard','animal-xor','（動物A）と（動物B）、いるのは片方だけ？','くらべる',pairs.map(([a,b])=>variant(`a${a}-${b}`,`${mi(a)}${mn(a)}と ${mi(b)}${mn(b)}、いるのは 片方だけ？`,hand=>((cnt(hand,TYPE_MASKS[a])>0)!==(cnt(hand,TYPE_MASKS[b])>0))?1:0)));
+
+  // ── ⚡ 相互回答（両面カードとは別枠。先手の最初の1回だけ） ──
+  add(101,'strong','strong-animal-count','⚡（動物）は何匹？','つよい',MOTIFS.map((x,i)=>variant(`a${i}`,`${mi(i)} ${mn(i)}は何匹？`,hand=>cnt(hand,TYPE_MASKS[i]),v=>`${v}匹`)),true);
+  add(102,'strong','strong-season-count','⚡（季節）は何枚？','つよい',SEASONS.map((x,i)=>variant(`s${i}`,`${si(i)} ${sn(i)}は何枚？`,hand=>cnt(hand,SEASON_MASKS[i]),v=>`${v}枚`)),true);
+  return qs;
+}
+const QUESTIONS=makeQuestions();
+const QUESTION_BY_KEY=Object.fromEntries(QUESTIONS.map(q=>[q.key,q]));
+const INITIAL_QUESTIONS=QUESTIONS.filter(q=>q.reciprocal);
+const NORMAL_QUESTIONS=QUESTIONS.filter(q=>!q.reciprocal);
+// 通常カードは両面。1枚（no）につき easy＝表・hard＝裏 を持ち、1ゲームで使えるのは1枚1回だけ。
+const NORMAL_CARDS=[...new Set(NORMAL_QUESTIONS.map(q=>q.no))].sort((a,b)=>a-b).map(no=>({
+  no,
+  easy:NORMAL_QUESTIONS.find(q=>q.no===no&&q.side==='easy'),
+  hard:NORMAL_QUESTIONS.find(q=>q.no===no&&q.side==='hard')
+}));
+
+// ── 設定と記録 ──
+const SAVE_KEY='marufu_suiri_3cards_v1';
+let record={w:0,l:0};
+try{record=JSON.parse(localStorage.getItem(SAVE_KEY))||record;}catch(e){}
+function persist(){try{localStorage.setItem(SAVE_KEY,JSON.stringify(record));}catch(e){}}
+function recordText(){return `せいせき：${record.w}勝 ${record.l}敗`;}
+let level=2,firstOpt='r',deckMode='easy',variantMode='asker';
+function setLevel(v){level=v;[1,2,3].forEach(n=>document.getElementById('lv'+n).classList.toggle('selected',n===v));}
+function setFirst(v){firstOpt=v;document.getElementById('fp').classList.toggle('selected',v==='p');document.getElementById('fa').classList.toggle('selected',v==='a');document.getElementById('fr').classList.toggle('selected',v==='r');}
+function setDeck(v){deckMode=v;['easy','hard','mix'].forEach(k=>document.getElementById('dm-'+k).classList.toggle('selected',k===v));}
+function setVariantMode(v){variantMode=v;['asker','answerer'].forEach(k=>document.getElementById('vm-'+k).classList.toggle('selected',k===v));}
+setLevel(2);setFirst('r');setDeck('easy');setVariantMode('asker');document.getElementById('record').textContent=recordText();
+
+// ── ゲーム状態 ──
+let G=null;
+let playerPossible=[],aiPossible=[];
+let guessSet=new Set(),guessArmed=false;
+
+function shuffled(a){
+  const r=[...a];
+  for(let i=r.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[r[i],r[j]]=[r[j],r[i]];}
+  return r;
+}
+function buildCandidates(excluded){
+  const pool=CARDS.map(c=>c.index).filter(i=>!excluded.has(i));
+  const out=[];
+  function walk(start,left,mask){
+    if(left===0){out.push(mask>>>0);return;}
+    for(let p=start;p<=pool.length-left;p++)walk(p+1,left-1,(mask|bit(pool[p]))>>>0);
+  }
+  walk(0,HAND_SIZE,0);
+  return out;
+}
+function startGame(){
+  const deck=shuffled(CARDS.map(c=>c.index));
+  const playerHand=deck.splice(0,HAND_SIZE).sort((a,b)=>a-b);
+  const aiHand=deck.splice(0,HAND_SIZE).sort((a,b)=>a-b);
+  const playerInitialSeen=deck.splice(0,INITIAL_SEEN_COUNT);
+  const aiInitialSeen=deck.splice(0,INITIAL_SEEN_COUNT);
+  const playerSeen=new Set(playerInitialSeen),aiSeen=new Set(aiInitialSeen);
+  const firstPlayer=firstOpt==='r'?(Math.random()<.5?'p':'a'):firstOpt;
+  G={gameId:makeAnalyticsId(),deck,playerHand,aiHand,playerMask:maskOf(playerHand),aiMask:maskOf(aiHand),playerSeen,aiSeen,playerInitialSeen,aiInitialSeen,playerAsked:new Map(),aiAsked:new Map(),playerChoices:null,playerOffer:null,candidateAssistVisible:false,memo:new Map(),motifCountMemo:Array(4).fill(''),seasonCountMemo:Array(4).fill(''),opponentAnswers:[],firstPlayer,turn:firstPlayer,actions:{p:0,a:0},initialQuestionPending:true,introDone:false,lastGuess:null,over:false,logs:[]};
+  playerPossible=buildCandidates(new Set([...playerHand,...playerSeen]));
+  aiPossible=buildCandidates(new Set([...aiHand,...aiSeen]));
+  trackEvent('game_start',{firstPlayer,level,deckMode,variantMode,initialCandidates:playerPossible.length});
+  guessSet.clear();guessArmed=false;
+  closeAllOverlays();
+  document.getElementById('setup-screen').style.display='none';
+  document.getElementById('game-screen').style.display='block';
+  document.getElementById('initial-seen-grid').innerHTML=playerInitialSeen.map(cardHTML).join('');
+  addLog('3まいずつ配り、おたがいに山札を2まい確認しました。');
+  addLog(`${firstPlayer==='p'?'😊 あなた':'🤖 AI'}が先手。最初は相互回答質問です。`);
+  setBanner('👀 最初の2まいを確認しよう');
+  render();
+  openOverlay('initial-seen-overlay');
+}
+function finishInitialClues(){
+  if(!G||G.over||G.introDone)return;
+  G.introDone=true;
+  closeOverlay('initial-seen-overlay');
+  if(G.turn==='a'){
+    setBanner('⚡ AIが最初の相互回答質問を考えています…');
+    render();setTimeout(aiTurn,700);
+  }else{
+    setBanner('⚡ 先手の最初は相互回答質問！');
+    render();
+  }
+}
+function quitGame(){
+  if(!G?.over&&G&&document.getElementById('game-screen').style.display!=='none'&&!confirm('このゲームをやめて、せっていに戻りますか？'))return;
+  if(G&&!G.over)trackEvent('game_end',{reason:'quit',winner:'none',playerActions:G.actions.p,aiActions:G.actions.a,firstPlayer:G.firstPlayer,level});
+  closeAllOverlays();G=null;
+  document.getElementById('game-screen').style.display='none';
+  document.getElementById('setup-screen').style.display='flex';
+  document.getElementById('record').textContent=recordText();
+}
+
+// ── 描画 ──
+function cardHTML(i){
+  const c=CARDS[i];
+  return `<div class="card"><img src="${imgSrc(i)}" alt="${cardName(i)}"><span class="season-dot" style="background:${c.season.color}">${c.season.icon}</span><span class="name">${c.motif.icon} ${c.motif.n}</span></div>`;
+}
+function render(){
+  if(!G)return;
+  document.getElementById('player-hand').innerHTML=G.playerHand.map(cardHTML).join('');
+  document.getElementById('ai-hand').innerHTML=Array.from({length:HAND_SIZE},()=>'<div class="card-back"></div>').join('');
+  document.getElementById('deck-count').textContent=G.deck.length;
+  document.getElementById('my-seen-count').textContent=G.playerSeen.size;
+  document.getElementById('ai-seen-count').textContent=G.aiSeen.size;
+  document.getElementById('possible-count').textContent=G.candidateAssistVisible?playerPossible.length.toLocaleString('ja-JP'):'？';
+  document.getElementById('possible-unit').textContent=G.candidateAssistVisible?' 通り':' 非表示';
+  document.getElementById('candidate-assist-button').textContent=G.candidateAssistVisible?'🙈 候補を隠す':'🔎 候補を表示';
+  document.querySelectorAll('.narrow').forEach(el=>{el.style.display=G.candidateAssistVisible?'block':'none';});
+  const mine=G.turn==='p'&&!G.over&&G.introDone;
+  const initialQuestion=G.initialQuestionPending&&G.turn===G.firstPlayer;
+  const pill=document.getElementById('turn-pill');
+  pill.textContent=G.over?'ゲーム終了':!G.introDone?'最初の手がかり':mine?'😊 あなたの番':'🤖 AIが考え中…';
+  pill.className='turn-pill '+(mine?'me':'ai');
+  document.getElementById('me-panel').classList.toggle('active',mine);
+  document.getElementById('ai-panel').classList.toggle('active',!mine&&!G.over);
+  document.getElementById('question-action').disabled=!mine;
+  document.getElementById('peek-action').disabled=!mine||G.deck.length===0||initialQuestion;
+  document.getElementById('guess-action').disabled=!mine||initialQuestion;
+  document.getElementById('question-action-sub').textContent=initialQuestion?'最初は必ず相互回答':`ランダムな${QUESTION_CHOICES}枚から選ぶ`;
+  document.getElementById('action-title').textContent=mine?(initialQuestion?'最初の相互回答質問をえらぼう':'手番の行動を 1つえらぼう'):'AIが手がかりを集めています…';
+  document.getElementById('log').innerHTML=G.logs.map(x=>`<li>${x}</li>`).join('');
+  document.getElementById('opponent-answer-list').innerHTML=G.opponentAnswers.length
+    ?G.opponentAnswers.map(x=>`<li><span class="q-label">${x.initial?'<span class="initial-badge">初回</span>':''}${x.label}</span><span class="q-answer">${x.answer}</span></li>`).join('')
+    :'<li class="answer-empty">まだAIの回答はありません</li>';
+  renderMatrix();
+}
+function addLog(text){if(!G)return;G.logs.unshift(text);if(G.logs.length>14)G.logs.length=14;}
+function rememberOpponentAnswer(label,answer,initial=false){if(G)G.opponentAnswers.unshift({label,answer,initial});}
+function setBanner(text){document.getElementById('banner').innerHTML=text;}
+function formatCount(n){return n.toLocaleString('ja-JP');}
+
+// ── 質問 ──
+function questionScore(q,candidates){
+  if(candidates.length<2)return 0;
+  const groups=new Map();
+  for(const m of candidates){const v=q.eval(m);groups.set(v,(groups.get(v)||0)+1);}
+  if(groups.size<2)return 0;
+  let entropy=0;
+  for(const n of groups.values()){const p=n/candidates.length;entropy-=p*Math.log2(p);}
+  return entropy;
+}
+// 答えを聞いたあとに残る候補数の期待値。小さいほど強い質問。
+function expectedQuestionRemainder(q,candidates){
+  if(!candidates.length)return Infinity;
+  const groups=new Map();
+  for(const m of candidates){const v=q.eval(m);groups.set(v,(groups.get(v)||0)+1);}
+  let squares=0;
+  for(const n of groups.values())squares+=n*n;
+  return squares/candidates.length;
+}
+// 山札の正体は未知なので、各カードがめくれる確率も候補手札から計算する。
+function expectedPeekRemainder(candidates,ownMask,seen){
+  if(!candidates.length)return Infinity;
+  let weightedTotal=0,totalWeight=0;
+  for(const c of CARDS){
+    if(has(ownMask,c.index)||seen.has(c.index))continue;
+    let remaining=0;
+    for(const hand of candidates)if(!has(hand,c.index))remaining++;
+    weightedTotal+=remaining*remaining;
+    totalWeight+=remaining;
+  }
+  return totalWeight?weightedTotal/totalWeight:Infinity;
+}
+// ミックスでは1枚ごとに表裏どちらが出るかをランダムに決める。
+function pickSide(card){
+  if(deckMode==='easy')return card.easy;
+  if(deckMode==='hard')return card.hard;
+  return Math.random()<.5?card.easy:card.hard;
+}
+function dealQuestions(asked,count=QUESTION_CHOICES){
+  return shuffled(NORMAL_CARDS.filter(c=>!asked.has(c.no))).slice(0,count).map(pickSide);
+}
+function questionCard(q){
+  const style=q.category==='動物'?'animal':q.category==='季節'?'season':q.category==='くらべる'?'pair':q.category==='1まい'?'single':q.category==='ぴったり'?'match':'strong';
+  const tag=q.category==='動物'?'どうぶつ':q.category==='季節'?'きせつ':q.category==='くらべる'?'くらべる':q.category==='1まい'?'1まい':q.category==='ぴったり'?'ぴったり':'相互回答';
+  const icon=style==='animal'?'🐾':style==='season'?'🌸':style==='pair'?'🧩':style==='single'?'🔍':style==='match'?'💞':'⚡';
+  const side=q.reciprocal?'':(q.side==='hard'?'🔥':'🌱');
+  return `<button class="question-card ${style}" onclick="selectQuestionTemplate('${q.key}')"><span class="q-tag">${side}${tag}</span><span class="q-icon">${icon}</span><span class="q-text">${q.label}</span>${q.reciprocal?'<span class="q-cost">↔ ふたりとも答える</span>':''}</button>`;
+}
+function openQuestions(){
+  if(!G||G.turn!=='p'||G.over)return;
+  const initialQuestion=G.initialQuestionPending&&G.turn===G.firstPlayer;
+  if(!G.playerChoices){
+    G.playerChoices=initialQuestion?[...INITIAL_QUESTIONS]:dealQuestions(G.playerAsked);
+    G.playerOffer={id:makeAnalyticsId(),keys:G.playerChoices.map(q=>q.key),initial:initialQuestion};
+    trackEvent('question_offer',{actor:'human',offerId:G.playerOffer.id,offered:G.playerOffer.keys,deckMode,initial:initialQuestion,actionNumber:G.actions.p+1,candidates:playerPossible.length});
+  }
+  const usedNormal=[...G.playerAsked.keys()].filter(no=>NORMAL_CARDS.some(c=>c.no===no)).length;
+  const remaining=NORMAL_CARDS.length-usedNormal;
+  document.getElementById('question-title').textContent=initialQuestion?'⚡ 最初の相互回答質問':'💬 どれを聞く？';
+  document.getElementById('question-modal-note').textContent=initialQuestion
+    ?'動物か季節の枚数を聞きます。あなたも同じ問いに答えます。おすすめは、自分がちょうど1枚持つ動物・季節です。'
+    :`質問の山からランダムに出た${QUESTION_CHOICES}枚です。（　）の中身はカードを選んだあとに決められます。`;
+  document.getElementById('question-deck-note').textContent=initialQuestion
+    ?'先手の初回調査：どちらか1枚を必ず選びます'
+    :`質問カードの山：あと${remaining}枚 ／ 今回の${G.playerChoices.length}択`;
+  document.getElementById('question-hand').innerHTML=G.playerChoices.length?G.playerChoices.map(questionCard).join(''):'<div class="empty-note" style="grid-column:1/-1">質問カードをぜんぶ使いました</div>';
+  openOverlay('question-overlay');
+}
+function selectQuestionTemplate(key){
+  if(!G||G.turn!=='p'||G.over||!G.playerChoices?.some(q=>q.key===key))return;
+  const q=QUESTION_BY_KEY[key];
+  if(q.variants.length===1){askQuestion(key,q.variants[0].id);return;}
+  // 「答える側が（　）をえらぶ」設定では、答えるAIが選ぶ（⚡相互回答は聞く側のまま）
+  if(variantMode==='answerer'&&!q.reciprocal){askQuestion(key,aiPickVariant(q).id);return;}
+  G.pendingTemplate=key;
+  closeOverlay('question-overlay');
+  document.getElementById('variant-title').textContent=q.reciprocal?'⚡ 相互回答質問を完成':'🔎 質問を完成させよう';
+  document.getElementById('variant-note').textContent=q.reciprocal?'聞きたい動物・季節を選ぼう。おすすめは、自分がちょうど1枚持ち、最初に見た2枚には少ないもの。この質問は、あなたも答えます。':'（　）に入れる動物・季節を選ぼう。';
+  document.getElementById('variant-grid').innerHTML=q.variants.map(v=>`<button class="variant-btn" onclick="askQuestion('${q.key}','${v.id}')">${v.label}</button>`).join('');
+  openOverlay('variant-overlay');
+}
+function backToQuestionHand(){if(G&&G.pendingAIQuestion)return;closeOverlay('variant-overlay');openOverlay('question-overlay');}
+// 答える側のAIは、自分の情報がいちばん漏れない（相手の候補が減らない）（　）を選ぶ。
+function aiPickVariant(q){
+  if(level===1)return q.variants[Math.floor(Math.random()*q.variants.length)];
+  const scored=q.variants.map(v=>{
+    const answer=v.eval(G.aiMask);
+    return {v,left:playerPossible.filter(m=>v.eval(m)===answer).length};
+  }).sort((a,b)=>b.left-a.left);
+  return level===3?scored[0].v:scored[Math.floor(Math.random()*Math.min(3,scored.length))].v;
+}
+// AIが出した質問カードに、プレイヤーが（　）を置いて答える
+function openAnswerVariant(q){
+  document.getElementById('variant-title').textContent='🤐 どう答える？';
+  document.getElementById('variant-note').textContent='AIが出した質問カードです。（　）に入れるものを、答えるあなたが決められます。教える情報が少なくてすむものを選ぼう。';
+  document.getElementById('variant-grid').innerHTML=q.variants.map(v=>'<button class="variant-btn" onclick="answerAIQuestion(\''+v.id+'\')">'+v.label+'</button>').join('');
+  setBanner('🤐 AIの質問に、どう答えるか えらぼう');
+  render();openOverlay('variant-overlay');
+}
+function answerAIQuestion(variantId){
+  const q=G&&G.pendingAIQuestion;if(!q)return;
+  const v=q.variants.find(x=>x.id===variantId);if(!v)return;
+  G.pendingAIQuestion=null;
+  closeOverlay('variant-overlay');
+  resolveAIQuestion(q,v);
+}
+function askQuestion(key,variantId){
+  const q=QUESTION_BY_KEY[key];
+  if(!G||G.turn!=='p'||G.over||!q||G.playerAsked.has(q.no)||!G.playerChoices?.some(x=>x.key===key))return;
+  const v=q.variants.find(x=>x.id===variantId);
+  if(!v)return;
+  const initialQuestion=G.initialQuestionPending&&G.turn===G.firstPlayer;
+  if(initialQuestion&&!q.reciprocal)return;
+  const answer=v.eval(G.aiMask),before=playerPossible.length,beforeAI=aiPossible.length,offer=G.playerOffer;
+  rememberOpponentAnswer(v.label,v.fmt(answer),initialQuestion);
+  G.playerAsked.set(q.no,{key,variantId,answer});
+  G.playerChoices=null;
+  playerPossible=playerPossible.filter(m=>v.eval(m)===answer);
+  trackEvent('question_selected',{actor:'human',offerId:offer?.id||'',offered:offer?.keys||[],questionKey:key,questionLabel:q.label,side:q.side,cardNo:q.no,deckMode,variantMode,variantId:v.id,variantLabel:v.label,initial:initialQuestion,reciprocal:q.reciprocal,actionNumber:G.actions.p+1,candidatesBefore:before,candidatesAfter:playerPossible.length});
+  G.playerOffer=null;
+  if(initialQuestion)G.initialQuestionPending=false;
+  closeOverlay('question-overlay');closeOverlay('variant-overlay');
+  document.getElementById('answer-question').textContent=`「${v.label}」`;
+  document.getElementById('answer-value').textContent=v.fmt(answer);
+  const reciprocal=document.getElementById('reciprocal-answer');
+  reciprocal.classList.toggle('show',q.reciprocal);
+  if(q.reciprocal){
+    const myAnswer=v.eval(G.playerMask);
+    aiPossible=aiPossible.filter(m=>v.eval(m)===myAnswer);
+    reciprocal.textContent=`⚡ あなたも回答：${v.fmt(myAnswer)}　この答えはAIにも伝わります。`;
+    document.getElementById('answer-narrow').textContent=`あなたの候補 ${formatCount(before)}→${formatCount(playerPossible.length)}通り ／ AIの候補も ${formatCount(beforeAI)}→${formatCount(aiPossible.length)}通り`;
+    addLog(`⚡😊「${v.label}」 → 🤖 ${v.fmt(answer)} ／ 😊 ${v.fmt(myAnswer)}`);
+  }else{
+    reciprocal.textContent='';
+    document.getElementById('answer-narrow').textContent=`候補が ${formatCount(before)}通り → ${formatCount(playerPossible.length)}通り に！`;
+    addLog(`😊「${v.label}」 → 🤖「${v.fmt(answer)}」`);
+  }
+  setBanner(`🤖「${v.fmt(answer)}」`);
+  render();openOverlay('answer-overlay');
+}
+
+// ── 山札を見る ──
+function playerPeek(){
+  if(!G||G.turn!=='p'||G.over||!G.deck.length||(G.initialQuestionPending&&G.turn===G.firstPlayer))return;
+  const i=G.deck.shift(),before=playerPossible.length;
+  G.playerSeen.add(i);
+  playerPossible=playerPossible.filter(m=>!has(m,i));
+  trackEvent('action',{actor:'human',action:'peek',actionNumber:G.actions.p+1,candidatesBefore:before,candidatesAfter:playerPossible.length,abandonedOfferId:G.playerOffer?.id||''});
+  document.getElementById('peek-img').src=imgSrc(i);
+  document.getElementById('peek-img').alt=cardName(i);
+  document.getElementById('peek-desc').textContent=`${CARDS[i].season.icon}${CARDS[i].motif.icon} ${cardName(i)}`;
+  document.getElementById('peek-narrow').textContent=`このカードはAIの手札ではない！　候補 ${formatCount(before)} → ${formatCount(playerPossible.length)}通り`;
+  addLog(`😊 山札を1まい見ました（内容はAIにひみつ）`);
+  setBanner('🃏 山札から ひみつの手がかりを見つけた！');
+  render();openOverlay('peek-overlay');
+}
+function openSeen(){
+  if(!G)return;
+  const cards=[...G.playerSeen];
+  document.getElementById('seen-grid').innerHTML=cards.length?cards.map(cardHTML).join(''):'<div class="empty-note" style="grid-column:1/-1">まだ山札を見ていません</div>';
+  openOverlay('seen-overlay');
+}
+function renderMatrix(){
+  if(!G)return;
+  let html='<div class="matrix-head">動物<br>×季節</div>';
+  html+=SEASONS.map((s,i)=>`<div class="matrix-head"><span>${s.icon}<br>${s.n}</span><input class="count-note" inputmode="numeric" maxlength="1" value="${G.seasonCountMemo[i]}" oninput="setAxisMemo('season',${i},this)" aria-label="${s.n}の枚数メモ" placeholder="?"></div>`).join('');
+  MOTIFS.forEach((motif,motifIndex)=>{
+    html+=`<div class="matrix-row-head"><span>${motif.icon}<br>${motif.n}</span><input class="count-note" inputmode="numeric" maxlength="1" value="${G.motifCountMemo[motifIndex]}" oninput="setAxisMemo('motif',${motifIndex},this)" aria-label="${motif.n}の枚数メモ" placeholder="?"></div>`;
+    for(const season of SEASONS){
+      const i=(motif.id-1)*4+(season.id-1),manual=G.memo.get(i)||'';
+      const cls=manual==='yes'?'manual-yes':manual==='no'?'manual-no':'';
+      const mark=manual==='yes'?'○':manual==='no'?'×':'';
+      const state=manual==='yes'?'ありそう・持っている':manual==='no'?'持っていない':'未記入';
+      html+=`<button class="memo-cell ${cls}" onclick="cycleMatrixMemo(${i})" aria-label="${cardName(i)}：${state}"><img src="${imgSrc(i)}" alt=""><span class="memo-mark">${mark}</span></button>`;
+    }
+  });
+  document.getElementById('matrix').innerHTML=html;
+}
+function setAxisMemo(kind,index,input){
+  if(!G)return;
+  let value=String(input.value).replace(/[^0-9]/g,'').slice(0,1);
+  if(value&&Number(value)>HAND_SIZE)value=String(HAND_SIZE);
+  input.value=value;
+  (kind==='motif'?G.motifCountMemo:G.seasonCountMemo)[index]=value;
+}
+function cycleMatrixMemo(i){
+  if(!G)return;
+  const current=G.memo.get(i);
+  if(!current)G.memo.set(i,'yes');
+  else if(current==='yes')G.memo.set(i,'no');
+  else G.memo.delete(i);
+  renderMatrix();
+}
+function resetMatrixMemo(){if(!G)return;G.memo.clear();G.motifCountMemo.fill('');G.seasonCountMemo.fill('');renderMatrix();}
+function toggleCandidateAssist(){
+  if(!G)return;
+  G.candidateAssistVisible=!G.candidateAssistVisible;
+  render();
+  if(document.getElementById('guess-overlay').classList.contains('show'))renderGuess();
+}
+function finishHumanTurn(){
+  if(!G||G.over)return;
+  G.actions.p++;G.playerChoices=null;G.playerOffer=null;
+  closeAllOverlays();G.turn='a';setBanner('🤖 AIが質問を考えています…');render();setTimeout(aiTurn,800);
+}
+
+// ── AI ──
+function chooseAIQuestion(){
+  const options=dealQuestions(G.aiAsked);
+  if(!options.length)return null;
+  const choices=options.map(q=>{
+    const ranked=q.variants.map(v=>({v,left:expectedQuestionRemainder(v,aiPossible),score:questionScore(v,aiPossible)})).sort((a,b)=>a.left-b.left);
+    return {q,v:level===1?q.variants[Math.floor(Math.random()*q.variants.length)]:ranked[0].v,left:ranked[0].left,score:ranked[0].score};
+  });
+  if(level===1)return choices[Math.floor(Math.random()*choices.length)];
+  if(level===3){
+    return choices.sort((a,b)=>a.left-b.left)[0];
+  }
+  const ranked=choices.sort((a,b)=>b.score-a.score);
+  return ranked[Math.floor(Math.random()*Math.min(3,ranked.length))];
+}
+function chooseAIInitialQuestion(){
+  const choices=INITIAL_QUESTIONS.flatMap(q=>q.variants.map(v=>({q,v,left:expectedQuestionRemainder(v,aiPossible),score:questionScore(v,aiPossible),ownAnswer:v.eval(G.aiMask)})));
+  if(level===1)return choices[Math.floor(Math.random()*choices.length)];
+  let safe=choices.filter(x=>x.ownAnswer===1);
+  if(!safe.length)safe=choices.filter(x=>x.ownAnswer===0);
+  if(!safe.length)safe=choices;
+  safe.sort((a,b)=>a.left-b.left);
+  return level===3?safe[0]:safe[Math.floor(Math.random()*Math.min(3,safe.length))];
+}
+function aiTurn(){
+  if(!G||G.over||G.turn!=='a')return;
+  if(G.initialQuestionPending&&G.turn===G.firstPlayer){
+    const {q,v}=chooseAIInitialQuestion();
+    const answer=v.eval(G.playerMask),aiAnswer=v.eval(G.aiMask);
+    rememberOpponentAnswer(v.label,v.fmt(aiAnswer),true);
+    G.aiAsked.set(q.no,{key:q.key,variantId:v.id,answer});
+    aiPossible=aiPossible.filter(m=>v.eval(m)===answer);
+    playerPossible=playerPossible.filter(m=>v.eval(m)===aiAnswer);
+    G.initialQuestionPending=false;
+    addLog(`⚡🤖 初回「${v.label}」 → 😊 ${v.fmt(answer)} ／ 🤖 ${v.fmt(aiAnswer)}`);
+    setBanner(`⚡🤖 最初の相互回答「${v.label}」<br><span style="color:#b84970">あなた：${v.fmt(answer)}　／　AI：${v.fmt(aiAnswer)}</span>`);
+    G.actions.a++;render();
+    setTimeout(()=>{
+      if(!G||G.over)return;
+      G.turn='p';setBanner('😊 あなたの番。どの手がかりを集める？');render();
+    },1500);
+    return;
+  }
+  if(aiPossible.length===1){aiDeclare(aiPossible[0]);return;}
+  const choice=chooseAIQuestion(),q=choice?.q,v=choice?.v;
+  const bestQuestion=choice?choice.left:Infinity;
+  const bestPeek=G.deck.length?expectedPeekRemainder(aiPossible,G.aiMask,G.aiSeen):Infinity;
+  const shouldPeek=level===3
+    ? G.deck.length>0&&bestPeek<=bestQuestion
+    : G.deck.length&&(!q||Math.random()<(level===1?.38:.24));
+  if(shouldPeek){
+    const i=G.deck.shift();
+    G.aiSeen.add(i);aiPossible=aiPossible.filter(m=>!has(m,i));
+    addLog('🤖 AIが山札を1まい見ました（内容はあなたにひみつ）');
+    setBanner('🤖「山札のカードを1まい見たよ。これは ひみつ！」');
+  }else if(q){
+    // 「答える側が（　）をえらぶ」設定では、ここでプレイヤーの選択を待つ
+    if(variantMode==='answerer'&&!q.reciprocal){G.pendingAIQuestion=q;openAnswerVariant(q);return;}
+    resolveAIQuestion(q,v);return;
+  }else{
+    // すべての手がかりを使っても複数候補なら、残った候補から勝負する
+    aiDeclare(aiPossible[Math.floor(Math.random()*aiPossible.length)]);return;
+  }
+  endAITurn();
+}
+function resolveAIQuestion(q,v){
+  const answer=v.eval(G.playerMask);
+  G.aiAsked.set(q.no,{key:q.key,variantId:v.id,answer});aiPossible=aiPossible.filter(m=>v.eval(m)===answer);
+  if(q.reciprocal){
+    const aiAnswer=v.eval(G.aiMask);
+    rememberOpponentAnswer(v.label,v.fmt(aiAnswer));
+    playerPossible=playerPossible.filter(m=>v.eval(m)===aiAnswer);
+    addLog(`⚡🤖「${v.label}」 → 😊 ${v.fmt(answer)} ／ 🤖 ${v.fmt(aiAnswer)}`);
+    setBanner(`⚡🤖「${v.label}」<br><span style="color:#b84970">あなた：${v.fmt(answer)}　／　AI：${v.fmt(aiAnswer)}</span>`);
+  }else{
+    addLog(`🤖「${v.label}」 → 😊「${v.fmt(answer)}」`);
+    setBanner(`🤖「${v.label}」<br><span style="color:#b84970">あなたの答え：${v.fmt(answer)}</span>`);
+  }
+  endAITurn();
+}
+function endAITurn(){
+  G.actions.a++;
+  render();
+  setTimeout(()=>{
+    if(!G||G.over)return;
+    G.turn='p';setBanner('😊 あなたの番。どの手がかりを集める？');render();
+  },1500);
+}
+function aiDeclare(mask){
+  if(!G||G.over)return;
+  G.lastGuess={by:'a',mask};
+  setBanner('🎯 AI「あなたの3まい、わかった！」');
+  setTimeout(()=>endGame(mask===G.playerMask?'ai-correct':'ai-wrong'),700);
+}
+
+// ── 3まいを宣言 ──
+function possibleUnion(){let u=0;for(const m of playerPossible)u=(u|m)>>>0;return u>>>0;}
+function openGuess(){
+  if(!G||G.turn!=='p'||G.over||(G.initialQuestionPending&&G.turn===G.firstPlayer))return;
+  guessSet.clear();guessArmed=false;renderGuess();openOverlay('guess-overlay');
+}
+function renderGuess(){
+  const assist=G.candidateAssistVisible,union=assist?possibleUnion():0;
+  document.getElementById('guess-modal-note').textContent=assist
+    ?'3まいを選んで宣言しよう。暗いカードは、手がかりからAIの手札ではないとわかっているよ。'
+    :'3まいを選んで宣言しよう。候補表示を使わない間は、16まいすべてから自由に選べます。';
+  document.getElementById('guess-grid').innerHTML=CARDS.map(c=>{
+    const impossible=assist&&!has(union,c.index),selected=guessSet.has(c.index),blocked=impossible&&!selected;
+    return `<button class="guess-card${selected?' selected':''}${impossible?' impossible':''}" ${blocked?'disabled':''} onclick="toggleGuess(${c.index})" aria-label="${cardName(c.index)}"><img src="${imgSrc(c.index)}" alt=""><span class="g-label">${c.season.icon}${c.motif.icon} ${c.motif.n}</span></button>`;
+  }).join('');
+  document.getElementById('guess-selected').textContent=guessSet.size;
+  document.getElementById('autofill').style.display=assist&&playerPossible.length===1?'block':'none';
+  const btn=document.getElementById('declare-btn');
+  btn.disabled=guessSet.size!==HAND_SIZE;
+  btn.classList.toggle('armed',guessArmed&&guessSet.size===HAND_SIZE);
+  btn.textContent=guessSet.size!==HAND_SIZE?`あと${HAND_SIZE-guessSet.size}まい選んでね`:guessArmed?'本当にこの3まいで勝負！':'この3まいで宣言する';
+}
+function toggleGuess(i){
+  if(guessSet.has(i))guessSet.delete(i);else if(guessSet.size<HAND_SIZE)guessSet.add(i);
+  guessArmed=false;renderGuess();
+}
+function clearGuess(){guessSet.clear();guessArmed=false;renderGuess();}
+function fillOnlyCandidate(){
+  if(!G?.candidateAssistVisible||playerPossible.length!==1)return;
+  guessSet.clear();for(let i=0;i<CARDS.length;i++)if(has(playerPossible[0],i))guessSet.add(i);
+  guessArmed=false;renderGuess();
+}
+function declareGuess(){
+  if(guessSet.size!==HAND_SIZE)return;
+  if(!guessArmed){guessArmed=true;renderGuess();return;}
+  const mask=maskOf([...guessSet]);
+  G.lastGuess={by:'p',mask};
+  trackEvent('action',{actor:'human',action:'guess',actionNumber:G.actions.p+1,candidatesBefore:playerPossible.length,candidatesAfter:playerPossible.length,abandonedOfferId:G.playerOffer?.id||''});
+  closeOverlay('guess-overlay');
+  endGame(mask===G.aiMask?'player-correct':'player-wrong');
+}
+
+// ── 勝敗 ──
+function endGame(reason){
+  if(!G||G.over)return;G.over=true;
+  const playerWin=reason==='player-correct'||reason==='ai-wrong';
+  trackEvent('game_end',{reason,winner:playerWin?'human':'ai',playerActions:G.actions.p+(G.lastGuess?.by==='p'?1:0),aiActions:G.actions.a,firstPlayer:G.firstPlayer,level});
+  if(playerWin)record.w++;else record.l++;
+  persist();render();
+  const icon=document.getElementById('result-icon'),title=document.getElementById('result-title'),why=document.getElementById('result-reason'),modal=document.getElementById('result-modal');
+  modal.classList.toggle('lose',!playerWin);
+  if(reason==='player-correct'){icon.textContent='🎉';title.textContent='ぴったり正解！';why.textContent='AIのひみつの3まいを、ぜんぶ見やぶりました！';}
+  if(reason==='player-wrong'){icon.textContent='🙈';title.textContent='おしい！ AIの勝ち';why.textContent='1まい以上ちがっていました。正しい手札を見て、手がかりを確かめてみよう。';}
+  if(reason==='ai-correct'){icon.textContent='🤖';title.textContent='AIに当てられた！';why.textContent='AIがあなたのひみつの3まいを、ぜんぶ見やぶりました。';}
+  if(reason==='ai-wrong'){icon.textContent='🥳';title.textContent='AIがまちがえた！';why.textContent='AIの宣言は不正解。さいごまで慎重に考えたあなたの勝ち！';}
+  document.getElementById('result-player').innerHTML=G.playerHand.map(cardHTML).join('');
+  document.getElementById('result-ai').innerHTML=G.aiHand.map(cardHTML).join('');
+  const declared=G.lastGuess||{by:'p',mask:0};
+  const declaredCards=CARDS.filter(c=>has(declared.mask,c.index)).map(c=>c.index);
+  document.getElementById('declared-title').textContent=declared.by==='p'?'🎯 あなたの回答':'🤖 AIの回答';
+  document.getElementById('result-declared').innerHTML=declaredCards.map(cardHTML).join('');
+  document.getElementById('result-record').textContent=recordText();
+  openOverlay('result-overlay');if(playerWin)confetti();
+}
+function confetti(){
+  const chars=['🌸','🍁','⭐','✨','🌿','❄️'];
+  for(let i=0;i<32;i++)setTimeout(()=>{const e=document.createElement('span');e.className='confetti';e.textContent=chars[Math.floor(Math.random()*chars.length)];e.style.left=Math.random()*100+'vw';e.style.animationDuration=(2.4+Math.random()*2)+'s';document.body.appendChild(e);setTimeout(()=>e.remove(),4700);},i*45);
+}
+
+// ── モーダル ──
+function openOverlay(id){document.getElementById(id).classList.add('show');}
+function closeOverlay(id){document.getElementById(id).classList.remove('show');}
+function closeAllOverlays(){document.querySelectorAll('.overlay').forEach(x=>x.classList.remove('show'));}
+</script>
+</body>
+</html>

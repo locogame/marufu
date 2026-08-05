@@ -1,0 +1,970 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>四季のなぞあて・オンライン対戦</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Kaisei+Decol:wght@400;700&family=M+PLUS+Rounded+1c:wght@400;500;700;800&display=swap');
+:root{
+  --sp:#df6b94;--su:#33a796;--au:#df843f;--wi:#5484ba;
+  --ink:#3d2d28;--muted:#8b756b;--paper:#fffaf3;--bg:#f6eee3;
+  --me:#df6b94;--ai:#597db8;--gold:#e9ad45;--line:#e8d8c8;
+  --shadow:0 5px 18px rgba(89,55,34,.14);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+/* touch-action:manipulation = 「ダブルタップで拡大」だけをやめる指定。
+   指2本でのピンチ拡大や、ふつうのスクロールはそのまま使える。 */
+html,body{min-height:100%;touch-action:manipulation;}
+body{font-family:'M PLUS Rounded 1c',sans-serif;background:
+  radial-gradient(circle at 8% 4%,rgba(255,190,210,.42),transparent 25%),
+  radial-gradient(circle at 92% 15%,rgba(126,211,199,.34),transparent 26%),
+  linear-gradient(155deg,#fff9f1,var(--bg));color:var(--ink);min-height:100dvh;}
+button{font-family:inherit;color:inherit;touch-action:manipulation;-webkit-user-select:none;user-select:none;}
+button:focus-visible{outline:3px solid #e9ad45;outline-offset:2px;}
+
+header{position:relative;z-index:3;background:linear-gradient(118deg,#f0a3bd 0%,#71cbbb 37%,#e7aa68 69%,#81a8d1 100%);padding:9px 14px 7px;padding-top:calc(9px + env(safe-area-inset-top,0px));text-align:center;box-shadow:0 3px 12px rgba(80,50,30,.16);}
+header h1{font-family:'Kaisei Decol',serif;font-size:clamp(1.05rem,4.8vw,1.38rem);color:#fff;letter-spacing:.07em;text-shadow:0 2px 5px rgba(44,35,30,.27);}
+header p{font-size:.62rem;color:rgba(255,255,255,.94);font-weight:700;margin-top:1px;}
+
+#landing-screen,#waiting-screen{width:min(100%,560px);margin:0 auto;padding:18px 15px calc(28px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:14px;}
+.hero{width:100%;background:rgba(255,250,243,.94);border:1px solid rgba(220,195,170,.65);border-radius:22px;padding:18px 16px 15px;box-shadow:var(--shadow);text-align:center;}
+.hero-title{font-family:'Kaisei Decol',serif;font-size:1.05rem;color:#68483a;}
+.hero p{font-size:.7rem;line-height:1.75;color:#765e51;margin-top:5px;}
+.panel{width:100%;background:rgba(255,255,255,.88);border:1px solid var(--line);border-radius:18px;padding:14px 15px;box-shadow:var(--shadow);}
+.panel h2{font-family:'Kaisei Decol',serif;font-size:.86rem;color:#674b3e;margin-bottom:9px;}
+.choice-row{display:flex;width:100%;gap:7px;margin-bottom:10px;}
+.choice{flex:1;border:2px solid #e6d9cd;background:rgba(255,255,255,.85);border-radius:14px;padding:10px 5px;cursor:pointer;font-size:.7rem;font-weight:800;box-shadow:0 2px 7px rgba(80,50,30,.08);}
+.choice.selected{border-color:var(--me);background:#fff1f6;color:#aa3e66;}
+.big-btn{width:100%;border:none;border-radius:24px;padding:14px;background:linear-gradient(135deg,#e66f98,#e9a74e);color:#fff;font-size:.82rem;font-weight:800;letter-spacing:.03em;box-shadow:0 6px 17px rgba(202,99,91,.3);cursor:pointer;}
+.big-btn:active{transform:scale(.97);}
+.big-btn.secondary{background:linear-gradient(135deg,#5bbcab,#299482);}
+.code-input{width:100%;border:2px solid #e6d9cd;border-radius:14px;padding:12px;font-size:1rem;font-weight:800;letter-spacing:.2em;text-align:center;text-transform:uppercase;margin-bottom:9px;}
+.room-code-display{font-family:'Kaisei Decol',serif;font-size:2rem;letter-spacing:.15em;text-align:center;color:#c54f78;background:#fff5f8;border:2px dashed #eab9c9;border-radius:16px;padding:12px;margin-bottom:9px;}
+.share-row{display:flex;gap:6px;margin-bottom:9px;}
+.share-row input{flex:1;border:1px solid #e4d6c9;border-radius:10px;padding:8px;font-size:.62rem;color:#71564b;}
+.small-btn{border:1px solid #e4d6c9;background:rgba(255,255,255,.9);border-radius:10px;padding:7px 9px;font-size:.61rem;font-weight:800;box-shadow:0 2px 6px rgba(80,50,30,.09);cursor:pointer;}
+.spinner{width:22px;height:22px;border:3px solid #eadbcf;border-top-color:#c54f78;border-radius:50%;margin:6px auto;animation:spin .8s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg)}}
+.role-row{display:flex;gap:7px;}
+.role-row button{flex:1;}
+.error-note{color:#b7405a;font-size:.62rem;font-weight:800;text-align:center;padding:6px 0;}
+
+#game-screen{display:none;width:min(100%,1120px);margin:0 auto;padding:10px 10px calc(22px + env(safe-area-inset-bottom,0px));}
+.battle{display:flex;flex-direction:column;gap:8px;}
+.gamebar{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:7px;margin-bottom:8px;}
+.turn-pill{justify-self:center;border-radius:20px;padding:6px 13px;background:#fff;box-shadow:0 2px 7px rgba(80,50,30,.1);font-size:.68rem;font-weight:800;color:var(--muted);}
+.turn-pill.me{background:#fff0f5;color:#b74270;}
+.turn-pill.opp{background:#eef5ff;color:#466d9f;}
+.deck-pill{font-size:.59rem;font-weight:800;color:#816f65;background:rgba(255,255,255,.85);padding:6px 8px;border-radius:10px;border:1px solid #eaded3;}
+.room-pill{font-size:.59rem;font-weight:800;color:#816f65;background:rgba(255,255,255,.85);padding:6px 8px;border-radius:10px;border:1px solid #eaded3;}
+
+.player-panel{background:rgba(255,255,255,.82);border:2px solid var(--line);border-radius:18px;padding:9px 10px;box-shadow:0 3px 10px rgba(80,50,30,.09);}
+.player-panel.active{border-color:#e69ab6;box-shadow:0 3px 14px rgba(223,107,148,.2);}
+.panel-head{display:flex;align-items:center;font-size:.67rem;font-weight:800;margin-bottom:7px;}
+.panel-head .who{font-size:.75rem;}
+.panel-head .clue{margin-left:auto;color:#8e7c72;font-size:.56rem;font-weight:700;}
+.hand{display:flex;justify-content:center;gap:5px;min-height:82px;flex-wrap:wrap;}
+.card,.card-back{width:min(17vw,74px);aspect-ratio:654/911;border-radius:10px;overflow:hidden;position:relative;flex-shrink:0;box-shadow:0 3px 8px rgba(70,45,30,.17);}
+.card{border:2px solid #fff;background:#eee;}
+.card img{width:100%;height:100%;object-fit:cover;display:block;}
+.card .season-dot{position:absolute;top:4px;left:4px;width:18px;height:18px;border-radius:50%;display:grid;place-items:center;color:#fff;font-size:.56rem;border:1.5px solid rgba(255,255,255,.8);text-shadow:0 1px 2px rgba(0,0,0,.25);}
+.card .name{position:absolute;left:3px;right:3px;bottom:3px;background:rgba(255,255,255,.9);border-radius:6px;padding:2px 1px;text-align:center;font-size:.46rem;font-weight:800;color:#5e493e;white-space:nowrap;}
+.card-back{border:2px solid #fff;background:linear-gradient(145deg,#85a8d1,#5d7fae);display:grid;place-items:center;}
+.card-back:before{content:'?';color:#fff;font-family:'Kaisei Decol',serif;font-size:1.2rem;}
+
+#banner{margin:8px 0;background:#fff8e8;border:1px solid #efd9a8;border-radius:13px;padding:8px 10px;text-align:center;font-size:.66rem;font-weight:800;line-height:1.5;color:#6d5539;min-height:38px;display:grid;place-items:center;box-shadow:0 2px 7px rgba(80,50,30,.08);}
+.answer-ledger{background:rgba(255,255,255,.9);border:1px solid #dfd2c6;border-radius:13px;padding:8px 10px;margin:8px 0;box-shadow:0 2px 7px rgba(80,50,30,.07);}
+.answer-ledger-head{display:flex;align-items:center;gap:5px;font-size:.62rem;font-weight:800;color:#6e574c;margin-bottom:5px;}
+.opponent-answer-list{list-style:none;max-height:220px;overflow-y:auto;}
+.opponent-answer-list li{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:7px;border-top:1px dashed #eaded3;padding:6px 2px;font-size:.56rem;line-height:1.4;}
+.opponent-answer-list li:first-child{border-top:0;}
+.opponent-answer-list .q-label{min-width:0;color:#705f57;font-weight:700;}
+.opponent-answer-list .q-answer{white-space:nowrap;background:#eef5ff;color:#476d9c;border-radius:10px;padding:3px 7px;font-weight:800;}
+.opponent-answer-list .who-badge{display:inline-block;margin-right:4px;border-radius:8px;padding:1px 4px;font-size:.45rem;vertical-align:1px;font-weight:800;}
+.who-badge.me{background:#fde3ec;color:#a2436a;}
+.who-badge.opp{background:#e2edfb;color:#3f6091;}
+.answer-empty{display:block;text-align:center;color:#a08d83;padding:7px 2px;border:0;font-weight:600;}
+
+.actions{display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;}
+.action{border:0;border-radius:15px;padding:10px 3px 9px;min-height:73px;color:#fff;cursor:pointer;box-shadow:0 4px 11px rgba(80,50,30,.16);font-size:.67rem;font-weight:800;}
+.action:active:not(:disabled){transform:scale(.95);}
+.action .ico{display:block;font-size:1.25rem;margin-bottom:3px;}
+.action .sub{display:block;font-size:.49rem;opacity:.88;font-weight:500;margin-top:2px;}
+.action.q{background:linear-gradient(145deg,#e4779c,#ca587f);}
+.action.peek{background:linear-gradient(145deg,#5bbcab,#299482);}
+.action.guess{background:linear-gradient(145deg,#edae50,#d9853e);}
+.action:disabled{filter:grayscale(.45);opacity:.45;cursor:default;box-shadow:none;}
+.spectator-note{text-align:center;font-size:.62rem;color:#8a756b;font-weight:800;padding:9px;background:rgba(255,255,255,.7);border-radius:12px;border:1px dashed #d8bfa8;}
+
+.overlay{display:none;position:fixed;z-index:50;inset:0;background:rgba(48,35,30,.56);padding:15px;align-items:center;justify-content:center;}
+.overlay.show{display:flex;}
+.modal{width:min(100%,540px);max-height:min(88dvh,760px);background:var(--paper);border-radius:21px;box-shadow:0 16px 50px rgba(28,20,17,.3);overflow:hidden;display:flex;flex-direction:column;}
+.modal-head{padding:13px 15px 10px;display:flex;align-items:center;border-bottom:1px solid #eaded2;flex-shrink:0;}
+.modal-head h2{font-family:'Kaisei Decol',serif;font-size:.92rem;color:#674b3e;}
+.xbtn{margin-left:auto;width:31px;height:31px;border:0;border-radius:50%;background:#eee2d8;cursor:pointer;font-weight:800;color:#745e52;}
+.modal-body{padding:12px 14px;overflow-y:auto;-webkit-overflow-scrolling:touch;}
+.modal-note{font-size:.61rem;color:#856f64;line-height:1.55;margin-bottom:10px;}
+.question-hand{display:grid;grid-template-columns:1fr 1fr;gap:9px;}
+.question-card{position:relative;min-height:112px;border:3px solid rgba(255,255,255,.86);border-radius:15px;padding:28px 9px 10px;background:#fff;box-shadow:0 4px 11px rgba(75,48,33,.16);cursor:pointer;overflow:hidden;font-size:.66rem;font-weight:800;line-height:1.5;text-align:center;}
+.question-card:active{transform:scale(.96);}
+.question-card .q-tag{position:absolute;left:7px;top:7px;border-radius:12px;padding:3px 7px;background:rgba(255,255,255,.72);font-size:.49rem;font-weight:800;}
+.question-card .q-icon{display:block;font-size:1.35rem;margin:5px 0 4px;}
+.question-card.animal{background:linear-gradient(145deg,#ffe2ec,#f4b8cb);color:#8f385a;}
+.question-card.season{background:linear-gradient(145deg,#dff4ec,#abdccb);color:#2e7167;}
+.question-card.pair{background:linear-gradient(145deg,#fff0d1,#f3ca83);color:#81552c;}
+.question-card.single{background:linear-gradient(145deg,#e4edfb,#b8cbea);color:#3f6091;}
+.question-card.strong{background:linear-gradient(145deg,#f6e4ff,#d9aceb);color:#703e86;}
+.question-card .q-cost{display:block;font-size:.48rem;margin-top:5px;color:#8b4770;}
+.variant-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;}
+.variant-btn{border:1.5px solid #ddcdbf;background:#fff;border-radius:12px;padding:10px 7px;min-height:50px;font-size:.6rem;font-weight:800;line-height:1.4;cursor:pointer;box-shadow:0 2px 6px rgba(75,48,33,.08);}
+.variant-btn:active{transform:scale(.96);}
+.answer-box{text-align:center;padding:6px 2px 2px;}
+.answer-q{font-size:.7rem;color:#755e53;font-weight:700;line-height:1.6;}
+.answer-big{font-family:'Kaisei Decol',serif;font-size:1.6rem;color:#c54f78;margin:3px 0 12px;}
+.continue-btn{width:100%;border:0;border-radius:18px;background:linear-gradient(135deg,#e46e97,#d65a84);color:#fff;padding:11px;font-size:.7rem;font-weight:800;cursor:pointer;}
+.peek-desc{text-align:center;font-size:.77rem;font-weight:800;color:#5e493e;margin-bottom:11px;}
+.initial-seen-grid{display:grid;grid-template-columns:repeat(2,minmax(0,110px));justify-content:center;gap:10px;margin:8px auto 13px;}
+.initial-seen-grid .card{width:100%;}
+.initial-rule{background:#fff5dc;border:1px solid #ead09a;border-radius:11px;padding:9px 10px;margin:0 0 11px;font-size:.59rem;color:#795d31;font-weight:800;line-height:1.55;}
+.empty-note{text-align:center;color:#9d8980;font-size:.66rem;padding:24px 5px;}
+
+.guess-status{display:flex;align-items:center;background:#fff;border:1px solid #e4d5c8;border-radius:12px;padding:7px 10px;margin-bottom:9px;font-size:.61rem;font-weight:800;color:#7a655a;}
+.guess-status strong{font-size:.9rem;color:#d16a43;margin:0 3px;}
+.guess-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;}
+.guess-card{position:relative;border:3px solid transparent;border-radius:10px;padding:0;overflow:hidden;background:#eee;cursor:pointer;aspect-ratio:654/911;box-shadow:0 2px 6px rgba(70,45,30,.12);}
+.guess-card img{width:100%;height:100%;object-fit:cover;display:block;}
+.guess-card .g-label{position:absolute;bottom:2px;left:2px;right:2px;background:rgba(255,255,255,.9);border-radius:5px;padding:2px 0;font-size:.43rem;font-weight:800;}
+.guess-card.selected{border-color:#e79732;box-shadow:0 0 0 2px #ffd27d,0 4px 10px rgba(180,100,30,.25);}
+.guess-card.selected:after{content:'✓';position:absolute;right:3px;top:3px;width:20px;height:20px;border-radius:50%;background:#e58c2e;color:#fff;display:grid;place-items:center;font-size:.7rem;font-weight:800;}
+.guess-actions{display:flex;gap:7px;margin-top:11px;}
+.clear-btn{border:1px solid #dfd2c7;background:#fff;border-radius:15px;padding:10px 12px;font-size:.62rem;font-weight:800;cursor:pointer;}
+.declare-btn{flex:1;border:0;border-radius:15px;padding:10px;background:linear-gradient(135deg,#edae50,#d9853e);color:#fff;font-size:.66rem;font-weight:800;cursor:pointer;}
+.declare-btn:disabled{opacity:.42;filter:grayscale(.6);cursor:default;}
+.declare-btn.armed{background:linear-gradient(135deg,#d95a62,#ae364e);}
+
+.result-modal{text-align:center;padding:19px 16px 17px;display:block;overflow-y:auto;}
+.result-icon{font-size:2.2rem;}
+.result-modal h2{font-family:'Kaisei Decol',serif;font-size:1.18rem;margin:3px 0;color:#b7466f;}
+.result-modal.lose h2{color:#4f73a5;}
+.result-reason{font-size:.64rem;color:#7e6c63;line-height:1.55;margin-bottom:13px;}
+.reveal-cols{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:13px;text-align:left;}
+.reveal-col{background:#fff;border:1px solid #e7d9cd;border-radius:13px;padding:8px;}
+.reveal-col h3{font-size:.58rem;margin-bottom:6px;color:#765f53;text-align:center;}
+.mini-list{display:flex;justify-content:center;gap:3px;flex-wrap:wrap;}
+.mini-list .card{width:18%;border-width:1px;border-radius:6px;box-shadow:0 1px 3px rgba(70,45,30,.15);}
+.mini-list .card .name,.mini-list .card .season-dot{display:none;}
+.result-buttons{display:flex;gap:8px;}
+.result-buttons button{flex:1;border:0;border-radius:18px;padding:10px;font-size:.66rem;font-weight:800;cursor:pointer;}
+.setup-again{background:#eee5dd;color:#745f54;}
+
+/* 推理メモ（suiri.html の推理マトリックスを対戦版へ移植） */
+.matrix-dock{background:rgba(255,250,243,.94);border:1px solid #ddcbbb;border-radius:18px;padding:11px;box-shadow:var(--shadow);margin:8px 0;}
+.matrix-dock-title{display:flex;align-items:center;gap:6px;font-family:'Kaisei Decol',serif;font-size:.78rem;color:#674b3e;margin-bottom:3px;}
+.memo-button{margin-left:auto;border:1px solid #e2d2c4;background:#fff;border-radius:12px;padding:8px 10px;font-family:'M PLUS Rounded 1c',sans-serif;font-size:.58rem;font-weight:800;color:#765c4e;cursor:pointer;white-space:nowrap;box-shadow:0 2px 6px rgba(80,50,30,.07);}
+.seen-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(62px,1fr));gap:7px;}
+.seen-grid .card{width:100%;}
+.private-note{text-align:center;font-size:.56rem;color:#a57250;margin-bottom:8px;font-weight:800;}
+.matrix-dock-note{font-size:.51rem;color:#8a756b;line-height:1.45;margin-bottom:6px;}
+.matrix{display:grid;grid-template-columns:48px repeat(4,1fr);gap:5px;align-items:stretch;margin-top:4px;}
+.matrix-head,.matrix-row-head{display:grid;place-items:center;text-align:center;font-size:.51rem;font-weight:800;color:#795f52;line-height:1.25;gap:3px;}
+.matrix-head{background:#f2e7dc;border-radius:9px;padding:5px 2px;}
+.matrix-row-head{background:#fff;border:1px solid #eadbcf;border-radius:9px;padding:3px;}
+.count-note{width:32px;height:23px;border:1.5px solid #d9beaa;border-radius:7px;background:#fffaf4;text-align:center;font-family:inherit;font-size:.65rem;font-weight:800;color:#b34f73;outline:none;}
+.count-note:focus{border-color:#db7195;box-shadow:0 0 0 2px rgba(219,113,149,.16);}
+.memo-cell{position:relative;border:2px solid #eadbcf;border-radius:10px;padding:0;overflow:hidden;background:#eee;aspect-ratio:1/1.12;cursor:pointer;box-shadow:0 2px 5px rgba(70,45,30,.1);}
+.memo-cell img{width:100%;height:100%;object-fit:cover;display:block;}
+.memo-cell .memo-mark{position:absolute;inset:0;display:grid;place-items:center;font-size:1.65rem;font-weight:800;text-shadow:0 2px 4px rgba(0,0,0,.35);}
+.memo-cell.manual-yes{border-color:#44a980;box-shadow:0 0 0 2px #bdebd9;}
+.memo-cell.manual-yes .memo-mark{color:#fff;background:rgba(39,151,107,.2);}
+.memo-cell.manual-no{filter:grayscale(.65);opacity:.62;border-color:#9d928d;}
+.memo-cell.manual-no .memo-mark{color:#fff;background:rgba(65,55,50,.38);}
+.matrix-legend{display:flex;flex-wrap:wrap;align-items:center;gap:5px 11px;margin:10px 0 0;font-size:.53rem;color:#806b60;font-weight:700;}
+.matrix-legend b{font-size:.68rem;}
+.memo-reset{margin-left:auto;border:1px solid #dfd1c4;background:#fff;border-radius:10px;padding:6px 9px;font-size:.54rem;font-weight:800;color:#806a5f;cursor:pointer;}
+
+@media (min-width:560px){
+  .battle{display:grid;grid-template-columns:1fr 1fr;gap:10px;align-items:start;}
+  #banner{grid-column:1/-1;}
+  .card,.card-back{width:min(9.3vw,62px);}
+  .hand{min-height:70px;}
+  /* 画面が広くなってもメモのマスが巨大にならないよう、表そのものの幅を抑える */
+  .matrix{grid-template-columns:44px repeat(4,1fr);gap:4px;}
+  .matrix-dock{max-width:420px;}
+}
+
+/* PC幅：推理メモと「きろく」を左右に並べる */
+@media (min-width:760px){
+  .lower-row{display:flex;align-items:flex-start;gap:10px;}
+  .lower-row .matrix-dock{flex:0 0 380px;max-width:380px;}
+  .lower-row .answer-ledger{flex:1;min-width:0;}
+  .opponent-answer-list{max-height:430px;}
+}
+</style>
+</head>
+<body>
+<header>
+  <h1>🔎 四季のなぞあて <small>オンライン対戦</small></h1>
+  <p id="header-sub">部屋コードで、はなれた相手と対戦・観戦しよう</p>
+</header>
+
+<main id="landing-screen">
+  <div class="hero">
+    <div class="hero-title">🃏 オンラインで対戦しよう</div>
+    <p>部屋を作って合言葉（部屋コード）を相手に伝えるか、もらったコードを入力して参加・観戦できます。</p>
+  </div>
+
+  <div class="panel">
+    <h2>🆕 部屋を作る</h2>
+    <div class="setup-label" style="font-size:.66rem;font-weight:800;color:#75594c;margin-bottom:7px;">手札の枚数</div>
+    <div class="choice-row">
+      <button class="choice selected" id="hs-3" onclick="setHandSizeChoice(3)">3まい</button>
+      <button class="choice" id="hs-4" onclick="setHandSizeChoice(4)">4まい</button>
+    </div>
+    <button class="big-btn" onclick="createRoom()">部屋を作る</button>
+  </div>
+
+  <div class="panel">
+    <h2>🔑 コードで参加・観戦</h2>
+    <input class="code-input" id="join-code-input" placeholder="ABCDEF" maxlength="6">
+    <div class="role-row">
+      <button class="big-btn" onclick="joinRoom(true)">対戦相手として参加</button>
+      <button class="big-btn secondary" onclick="joinRoom(false)">観戦する</button>
+    </div>
+    <div class="error-note" id="landing-error"></div>
+  </div>
+</main>
+
+<main id="waiting-screen" style="display:none">
+  <div class="panel">
+    <h2>👤 対戦相手を待っています</h2>
+    <div class="room-code-display" id="waiting-room-code">------</div>
+    <div class="share-row">
+      <input id="waiting-share-url" readonly>
+      <button class="small-btn" onclick="copyShareUrl()">コピー</button>
+    </div>
+    <div class="spinner"></div>
+    <p style="text-align:center;font-size:.62rem;color:#8a756b;font-weight:700;">このコードかリンクを相手に伝えてください</p>
+  </div>
+</main>
+
+<main id="game-screen">
+  <div class="battle">
+    <section class="player-panel me-panel" id="me-panel">
+      <div class="panel-head"><span class="who">😊 あなたの手札</span><span class="clue" id="me-clue"></span></div>
+      <div class="hand" id="me-hand"></div>
+    </section>
+    <section class="player-panel" id="opp-panel">
+      <div class="panel-head"><span class="who" id="opp-title">🧑 あいての手札</span><span class="clue" id="opp-clue"></span></div>
+      <div class="hand" id="opp-hand"></div>
+    </section>
+    <div id="banner"></div>
+  </div>
+
+  <div class="gamebar">
+    <div class="room-pill">部屋 <span id="room-code-label"></span></div>
+    <div class="turn-pill" id="turn-pill"></div>
+    <div class="deck-pill">山札 <span id="deck-count">-</span>枚</div>
+  </div>
+
+  <div id="spectator-note" class="spectator-note" style="display:none">👀 観戦モード：両方の手札が見えています</div>
+
+  <div class="actions" id="action-row">
+    <button class="action q" id="question-action" onclick="openQuestions()"><span class="ico">💬</span>質問する<span class="sub" id="question-action-sub">3枚から選ぶ</span></button>
+    <button class="action peek" id="peek-action" onclick="doPeek()"><span class="ico">👀</span>山札を見る<span class="sub">1まい確認</span></button>
+    <button class="action guess" id="guess-action" onclick="openGuess()"><span class="ico">🎯</span>これだ！<span class="sub" id="guess-action-sub">当てる</span></button>
+  </div>
+
+  <!-- 画面が広いときは、この中でメモと「きろく」を左右に並べる -->
+  <div class="lower-row">
+  <aside class="matrix-dock" id="memo-dock" aria-label="推理メモ">
+    <h2 class="matrix-dock-title">📝 推理メモ<button class="memo-button" onclick="openSeen()">👀 見た山札 <span id="my-seen-count">0</span>まい</button></h2>
+    <p class="matrix-dock-note">あなただけに見えるメモです（あいてにも送られません）。カードはタップで「○ → × → 空欄」。数字欄には、その動物・季節の枚数をメモできます。</p>
+    <div class="matrix" id="matrix"></div>
+    <div class="matrix-legend">
+      <span><b style="color:#29976b">○</b> ありそう</span>
+      <span><b>×</b> ない</span>
+      <span>空欄 不明</span>
+      <button class="memo-reset" onclick="resetMemo()">メモを全部消す</button>
+    </div>
+  </aside>
+
+  <section class="answer-ledger">
+    <div class="answer-ledger-head">💬 きろく <span class="hint">新しい順</span></div>
+    <ul class="opponent-answer-list" id="game-log"></ul>
+  </section>
+  </div>
+</main>
+
+<!-- 初期確認2まい -->
+<div class="overlay" id="initial-seen-overlay" role="dialog" aria-modal="true">
+  <div class="modal">
+    <div class="modal-head"><h2>👀 山札から2まい確認</h2></div>
+    <div class="modal-body">
+      <p class="initial-rule">ゲーム開始時に、山札から2まいだけこっそり確認できます。この2まいは、あいてには秘密です。</p>
+      <div class="initial-seen-grid" id="initial-seen-grid"></div>
+      <button class="continue-btn" onclick="closeOverlay('initial-seen-overlay')">はじめる</button>
+    </div>
+  </div>
+</div>
+
+<!-- 見た山札の一覧（初期確認2まい＋そのあと見たカード）-->
+<div class="overlay" id="seen-overlay" role="dialog" aria-modal="true">
+  <div class="modal">
+    <div class="modal-head"><h2>👀 あなたが見た山札</h2><button class="xbtn" onclick="closeOverlay('seen-overlay')" aria-label="閉じる">×</button></div>
+    <div class="modal-body">
+      <div class="private-note">🤫 このカードはあなただけが見られます</div>
+      <p class="modal-note">ここにあるカードは山札から出たので、あいての手札には入っていません。</p>
+      <div class="seen-grid" id="seen-grid"></div>
+    </div>
+  </div>
+</div>
+
+<!-- 質問カード選択 -->
+<div class="overlay" id="question-overlay" role="dialog" aria-modal="true">
+  <div class="modal">
+    <div class="modal-head"><h2 id="question-title">💬 どれを聞く？</h2><button class="xbtn" onclick="closeOverlay('question-overlay')">×</button></div>
+    <div class="modal-body">
+      <p class="modal-note" id="question-modal-note"></p>
+      <div class="question-hand" id="question-hand"></div>
+    </div>
+  </div>
+</div>
+
+<!-- (　)の中身を選ぶ -->
+<div class="overlay" id="variant-overlay" role="dialog" aria-modal="true">
+  <div class="modal">
+    <div class="modal-head"><h2 id="variant-title">🔎 質問を完成させよう</h2><button class="xbtn" onclick="backToQuestionHand()">×</button></div>
+    <div class="modal-body">
+      <p class="modal-note" id="variant-note"></p>
+      <div class="variant-grid" id="variant-grid"></div>
+    </div>
+  </div>
+</div>
+
+<!-- 回答表示 -->
+<div class="overlay" id="answer-overlay" role="dialog" aria-modal="true">
+  <div class="modal">
+    <div class="modal-head"><h2>💬 回答</h2></div>
+    <div class="modal-body">
+      <div class="answer-box">
+        <p class="answer-q" id="answer-question"></p>
+        <div class="answer-big" id="answer-big"></div>
+        <div id="answer-self" style="font-size:.62rem;color:#754785;font-weight:800;"></div>
+        <button class="continue-btn" onclick="closeOverlay('answer-overlay')">覚えた！</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 山札を見た結果 -->
+<div class="overlay" id="peek-overlay" role="dialog" aria-modal="true">
+  <div class="modal">
+    <div class="modal-head"><h2>👀 山札の1まい</h2></div>
+    <div class="modal-body">
+      <p class="peek-desc">この1まいは、あなただけの秘密です。</p>
+      <div class="initial-seen-grid" id="peek-card-grid" style="grid-template-columns:minmax(0,140px);"></div>
+      <button class="continue-btn" onclick="closeOverlay('peek-overlay')">覚えた！</button>
+    </div>
+  </div>
+</div>
+
+<!-- 宣言 -->
+<div class="overlay" id="guess-overlay" role="dialog" aria-modal="true">
+  <div class="modal">
+    <div class="modal-head"><h2>🎯 これだ！</h2><button class="xbtn" onclick="closeOverlay('guess-overlay')">×</button></div>
+    <div class="modal-body">
+      <p class="modal-note">あいての手札を選んで宣言しよう。</p>
+      <div class="guess-status">えらんだカード：<strong id="guess-selected">0</strong>/ <span id="guess-need"></span></div>
+      <div class="guess-grid" id="guess-grid"></div>
+      <div class="guess-actions">
+        <button class="clear-btn" onclick="clearGuess()">選びなおす</button>
+        <button class="declare-btn" id="declare-btn" onclick="declareGuess()" disabled></button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 結果 -->
+<div class="overlay" id="result-overlay" role="dialog" aria-modal="true">
+  <div class="modal result-modal" id="result-modal">
+    <div class="result-icon" id="result-icon"></div>
+    <h2 id="result-title"></h2>
+    <p class="result-reason" id="result-reason"></p>
+    <div class="reveal-cols">
+      <div class="reveal-col"><h3>😊 あなたの手札</h3><div class="mini-list" id="result-me"></div></div>
+      <div class="reveal-col"><h3>🧑 あいての手札</h3><div class="mini-list" id="result-opp"></div></div>
+    </div>
+    <div class="result-buttons">
+      <button class="setup-again" onclick="location.href='suiri-online.html'">部屋一覧へ</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── カード定義（サーバー側 suiri_rules.php と同じルールをラベル表示用に複製）──
+const MOTIFS=[
+  {id:1,n:'アヒル',icon:'🦆'},
+  {id:2,n:'クマ',icon:'🐻'},
+  {id:3,n:'リス',icon:'🐿️'},
+  {id:4,n:'ウサギ',icon:'🐰'}
+];
+const SEASONS=[
+  {id:1,n:'はる',icon:'🌸',color:'#df6b94'},
+  {id:2,n:'なつ',icon:'🌊',color:'#33a796'},
+  {id:3,n:'あき',icon:'🍁',color:'#df843f'},
+  {id:4,n:'ふゆ',icon:'⛄',color:'#5484ba'}
+];
+const CARDS=[];
+for(const motif of MOTIFS)for(const season of SEASONS){
+  const index=(motif.id-1)*4+(season.id-1);
+  CARDS.push({index,motif,season});
+}
+const bit=i=>(1<<i)>>>0;
+const has=(mask,i)=>!!((mask>>>i)&1);
+function popcount(x){x>>>=0;x=x-((x>>>1)&0x55555555);x=(x&0x33333333)+((x>>>2)&0x33333333);return (((x+(x>>>4))&0x0F0F0F0F)*0x01010101)>>>24;}
+const imgSrc=i=>`../イラスト/${CARDS[i].motif.id}-${CARDS[i].season.id}.jpg`;
+const cardName=i=>`${CARDS[i].season.n}の${CARDS[i].motif.n}`;
+function cardHTML(i){
+  const c=CARDS[i];
+  return `<div class="card"><img src="${imgSrc(i)}" alt="${cardName(i)}"><span class="season-dot" style="background:${c.season.color}">${c.season.icon}</span><span class="name">${c.motif.icon} ${c.motif.n}</span></div>`;
+}
+const TYPE_MASKS=MOTIFS.map(m=>{let mask=0;for(const c of CARDS)if(c.motif.id===m.id)mask|=bit(c.index);return mask>>>0;});
+const SEASON_MASKS=SEASONS.map(s=>{let mask=0;for(const c of CARDS)if(c.season.id===s.id)mask|=bit(c.index);return mask>>>0;});
+const cnt=(hand,mask)=>popcount((hand&mask)>>>0);
+const animalKinds=hand=>TYPE_MASKS.filter(m=>cnt(hand,m)>0).length;
+const seasonKinds=hand=>SEASON_MASKS.filter(m=>cnt(hand,m)>0).length;
+
+function makeQuestions(){
+  const qs=[];
+  const yesNo=v=>v?'そうだよ！':'ちがうよ';
+  const variant=(id,label,evalFn,fmt=yesNo)=>({id,label,eval:evalFn,fmt});
+  const add=(no,side,key,label,category,variants,reciprocal=false)=>qs.push({no,side,key,label,category,variants,reciprocal});
+  const pairs=[];
+  for(let a=0;a<4;a++)for(let b=a+1;b<4;b++)pairs.push([a,b]);
+  const ordered=[];
+  for(let a=0;a<4;a++)for(let b=0;b<4;b++)if(a!==b)ordered.push([a,b]);
+  const oddPairs=[[0,1],[0,2],[0,3]];
+  const mi=i=>MOTIFS[i].icon, mn=i=>MOTIFS[i].n, si=i=>SEASONS[i].icon, sn=i=>SEASONS[i].n;
+
+  add(1,'easy','animal-any','（動物）はいる？','動物',MOTIFS.map((x,i)=>variant(`a${i}`,`${mi(i)} ${mn(i)}はいる？`,hand=>cnt(hand,TYPE_MASKS[i])>0?1:0)));
+  add(2,'easy','season-any','（季節）はある？','季節',SEASONS.map((x,i)=>variant(`s${i}`,`${si(i)} ${sn(i)}はある？`,hand=>cnt(hand,SEASON_MASKS[i])>0?1:0)));
+  add(3,'easy','card-present','具体的な1枚はある？','1まい',Array.from({length:16},(_,c)=>{
+    const mIdx=Math.floor(c/4), sIdx=c%4;
+    return variant(`c${c}`,`${si(sIdx)}${sn(sIdx)}の${mi(mIdx)}${mn(mIdx)}はある？`,hand=>has(hand,c)?1:0);
+  }));
+  add(4,'easy','animal-all','4種類の動物がすべている？','動物',[variant('all','🐾 4種類の動物がすべているの？',hand=>animalKinds(hand)===4?1:0)]);
+  add(5,'easy','season-all','4種類の季節がすべてある？','季節',[variant('all','🎨 4種類の季節がすべてあるの？',hand=>seasonKinds(hand)===4?1:0)]);
+  add(6,'easy','animal-same','（動物A）と（動物B）は同じ数？','くらべる',pairs.map(([a,b])=>variant(`a${a}-${b}`,`${mi(a)}${mn(a)}と ${mi(b)}${mn(b)}は 同じ数？`,hand=>cnt(hand,TYPE_MASKS[a])===cnt(hand,TYPE_MASKS[b])?1:0)));
+  add(7,'easy','season-same','（季節A）と（季節B）は同じ枚数？','くらべる',pairs.map(([a,b])=>variant(`s${a}-${b}`,`${si(a)}${sn(a)}と ${si(b)}${sn(b)}は 同じ枚数？`,hand=>cnt(hand,SEASON_MASKS[a])===cnt(hand,SEASON_MASKS[b])?1:0)));
+  add(8,'easy','animal-most','（動物）が一番多い？','動物',MOTIFS.map((x,i)=>variant(`a${i}`,`${mi(i)} ${mn(i)}が一番多い？（同率もOK）`,hand=>{const c=TYPE_MASKS.map(m=>cnt(hand,m));return c[i]===Math.max(...c)?1:0;})));
+  add(9,'easy','season-most','（季節）が一番多い？','季節',SEASONS.map((x,i)=>variant(`s${i}`,`${si(i)} ${sn(i)}が一番多い？（同率もOK）`,hand=>{const c=SEASON_MASKS.map(m=>cnt(hand,m));return c[i]===Math.max(...c)?1:0;})));
+  add(10,'easy','animal-more','（動物A）は（動物B）より多い？','くらべる',ordered.map(([a,b])=>variant(`a${a}-${b}`,`${mi(a)}${mn(a)}は ${mi(b)}${mn(b)}より多い？`,hand=>cnt(hand,TYPE_MASKS[a])>cnt(hand,TYPE_MASKS[b])?1:0)));
+  add(11,'easy','season-more','（季節A）は（季節B）より多い？','くらべる',ordered.map(([a,b])=>variant(`s${a}-${b}`,`${si(a)}${sn(a)}は ${si(b)}${sn(b)}より多い？`,hand=>cnt(hand,SEASON_MASKS[a])>cnt(hand,SEASON_MASKS[b])?1:0)));
+  add(12,'easy','animal-odd','（動物A）＋（動物B）は奇数匹？','くらべる',oddPairs.map(([a,b])=>variant(`a${a}-${b}`,`${mi(a)}${mn(a)}と ${mi(b)}${mn(b)}は あわせて奇数匹？`,hand=>cnt(hand,(TYPE_MASKS[a]|TYPE_MASKS[b])>>>0)%2)));
+  add(13,'easy','season-odd','（季節A）＋（季節B）は奇数枚？','くらべる',oddPairs.map(([a,b])=>variant(`s${a}-${b}`,`${si(a)}${sn(a)}と ${si(b)}${sn(b)}は あわせて奇数枚？`,hand=>cnt(hand,(SEASON_MASKS[a]|SEASON_MASKS[b])>>>0)%2)));
+  add(14,'easy','animal-one','（動物）はちょうど1匹？','動物',MOTIFS.map((x,i)=>variant(`a${i}`,`${mi(i)} ${mn(i)}はちょうど1匹？`,hand=>cnt(hand,TYPE_MASKS[i])===1?1:0)));
+  add(15,'easy','season-one','（季節）はちょうど1枚？','季節',SEASONS.map((x,i)=>variant(`s${i}`,`${si(i)} ${sn(i)}はちょうど1枚？`,hand=>cnt(hand,SEASON_MASKS[i])===1?1:0)));
+  add(101,'strong','strong-animal-count','⚡（動物）は何匹？','つよい',MOTIFS.map((x,i)=>variant(`a${i}`,`${mi(i)} ${mn(i)}は何匹？`,hand=>cnt(hand,TYPE_MASKS[i]),v=>`${v}匹`)),true);
+  add(102,'strong','strong-season-count','⚡（季節）は何枚？','つよい',SEASONS.map((x,i)=>variant(`s${i}`,`${si(i)} ${sn(i)}は何枚？`,hand=>cnt(hand,SEASON_MASKS[i]),v=>`${v}枚`)),true);
+  add(103,'strong','strong-animal-kinds','⚡動物は何種類いる？','つよい',[variant('kinds','⚡🐾 動物は何種類いる？',animalKinds,v=>`${v}種類`)],true);
+  add(104,'strong','strong-season-kinds','⚡季節は何種類ある？','つよい',[variant('kinds','⚡🎨 季節は何種類ある？',seasonKinds,v=>`${v}種類`)],true);
+  return qs;
+}
+const QUESTIONS=makeQuestions();
+const QUESTION_BY_KEY=Object.fromEntries(QUESTIONS.map(q=>[q.key,q]));
+const NO_TO_KEY=Object.fromEntries(QUESTIONS.map(q=>[q.no,q.key]));
+
+// ── 通信・状態管理 ──
+const POLL_MS=1500;
+let code=null, token=null, myRole=null, handSize=4;
+let latestView=null;
+let pollTimer=null;
+let chosenHandSize=3;
+let pendingKey=null;
+let guessSet=new Set(), guessArmed=false;
+let initialSeenShownFor=null;
+
+function setHandSizeChoice(n){
+  chosenHandSize=n;
+  document.getElementById('hs-3').classList.toggle('selected',n===3);
+  document.getElementById('hs-4').classList.toggle('selected',n===4);
+}
+
+async function api(path, opts){
+  const res=await fetch(path, opts);
+  const data=await res.json().catch(()=>({ok:false,error:'invalid_response'}));
+  if(!res.ok || !data.ok){
+    throw new Error(data.error||('http_'+res.status));
+  }
+  return data;
+}
+
+function storageKey(c){return 'suiri_online_'+c;}
+function saveSession(c, tok, role){
+  try{localStorage.setItem(storageKey(c), JSON.stringify({token:tok, role}));}catch(e){}
+}
+function loadSession(c){
+  try{return JSON.parse(localStorage.getItem(storageKey(c)))||null;}catch(e){return null;}
+}
+
+async function createRoom(){
+  document.getElementById('landing-error').textContent='';
+  try{
+    const data=await api('room_create.php',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({handSize:chosenHandSize})});
+    code=data.roomCode; token=data.playerToken; myRole='p1'; handSize=data.handSize;
+    saveSession(code, token, 'p1');
+    document.getElementById('waiting-room-code').textContent=code;
+    document.getElementById('waiting-share-url').value=data.shareUrl;
+    document.getElementById('landing-screen').style.display='none';
+    document.getElementById('waiting-screen').style.display='flex';
+    startPolling();
+  }catch(e){
+    document.getElementById('landing-error').textContent='部屋の作成に失敗しました（'+e.message+'）';
+  }
+}
+
+function copyShareUrl(){
+  const el=document.getElementById('waiting-share-url');
+  el.select();
+  try{document.execCommand('copy');}catch(e){}
+  if(navigator.clipboard){navigator.clipboard.writeText(el.value).catch(()=>{});}
+}
+
+async function joinRoom(wantsToPlay){
+  document.getElementById('landing-error').textContent='';
+  const raw=document.getElementById('join-code-input').value;
+  const c=raw.toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,6);
+  if(!c){document.getElementById('landing-error').textContent='部屋コードを入力してください';return;}
+  try{
+    const data=await api('room_join.php',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({code:c,wantsToPlay})});
+    code=c;
+    handSize=data.handSize;
+    if(data.role==='p2'){
+      token=data.playerToken; myRole='p2';
+      saveSession(code, token, 'p2');
+    }else{
+      token=null; myRole='spectator';
+      saveSession(code, '', 'spectator');
+    }
+    document.getElementById('landing-screen').style.display='none';
+    document.getElementById('game-screen').style.display='block';
+    startPolling();
+  }catch(e){
+    document.getElementById('landing-error').textContent='入室できませんでした（'+e.message+'）';
+  }
+}
+
+function startPolling(){
+  if(pollTimer)clearInterval(pollTimer);
+  poll();
+  pollTimer=setInterval(poll, POLL_MS);
+}
+
+async function poll(){
+  try{
+    const params=new URLSearchParams({code, token: token||''});
+    const data=await api('room_state.php?'+params.toString());
+    if(latestView && latestView.version===data.version && latestView.status===data.status)return;
+    latestView=data;
+    handSize=data.handSize;
+    onStateUpdate();
+  }catch(e){
+    // ポーリング中の一時的な失敗は無視して次回に任せる
+  }
+}
+
+function onStateUpdate(){
+  if(latestView.status==='waiting'){
+    return; // 相手待ち画面のまま
+  }
+  if(document.getElementById('waiting-screen').style.display!=='none'){
+    document.getElementById('waiting-screen').style.display='none';
+    document.getElementById('game-screen').style.display='block';
+  }
+  render();
+}
+
+// ── 描画 ──
+function render(){
+  const v=latestView;
+  if(!v || v.status==='waiting')return;
+  document.getElementById('room-code-label').textContent=code;
+
+  const isSpectator=v.role==='spectator';
+  document.getElementById('spectator-note').style.display=isSpectator?'block':'none';
+  document.getElementById('action-row').style.display=isSpectator?'none':'grid';
+
+  // 観戦者は両方の手札が見えているのでメモは不要。
+  // メモはサーバーの状態に連動しないので、部屋ごとに一度だけ組み立てる
+  // （毎回組み立て直すと、数字を入力している最中に消えてしまうため）。
+  document.getElementById('memo-dock').style.display=isSpectator?'none':'block';
+  if(!isSpectator && memoBuiltFor!==code){
+    memoBuiltFor=code;
+    loadMemo(code);
+    renderMemo();
+  }
+
+  let myHand, oppHand, myClue, oppClue;
+  if(isSpectator){
+    myHand=v.hands.p1; oppHand=v.hands.p2;
+    document.querySelector('#me-panel .who').textContent='😊 P1の手札';
+    document.getElementById('opp-title').textContent='🧑 P2の手札';
+    myClue=''; oppClue='';
+  }else{
+    myHand=v.yourHand;
+    document.querySelector('#me-panel .who').textContent='😊 あなたの手札';
+    document.getElementById('opp-title').textContent='🧑 あいての手札';
+    myClue='この'+myHand.length+'まいはあいてにひみつ';
+    oppClue=v.over?'':('見た山札:'+v.opponentSeenCount+'まい');
+  }
+  document.getElementById('me-hand').innerHTML=myHand.map(cardHTML).join('');
+  document.getElementById('me-clue').textContent=myClue;
+
+  if(v.over && v.opponentHand){
+    document.getElementById('opp-hand').innerHTML=v.opponentHand.map(cardHTML).join('');
+  }else if(isSpectator){
+    document.getElementById('opp-hand').innerHTML=oppHand.map(cardHTML).join('');
+  }else{
+    document.getElementById('opp-hand').innerHTML=Array.from({length:handSize}).map(()=>'<div class="card-back"></div>').join('');
+  }
+  document.getElementById('opp-clue').textContent=oppClue;
+
+  document.getElementById('deck-count').textContent=v.deckRemaining;
+
+  const mine=!isSpectator && v.turn===v.role && !v.over;
+  const turnPill=document.getElementById('turn-pill');
+  if(v.over){
+    turnPill.textContent='🏁 対局終了';
+    turnPill.className='turn-pill';
+  }else if(isSpectator){
+    turnPill.textContent=(v.turn==='p1'?'P1':'P2')+'の番';
+    turnPill.className='turn-pill';
+  }else{
+    turnPill.textContent=mine?'😊 あなたの番':'🧑 あいての番';
+    turnPill.className='turn-pill '+(mine?'me':'opp');
+  }
+
+  if(!isSpectator){
+    const initialQuestion=v.initialQuestionPending && v.turn===v.role;
+    document.getElementById('question-action').disabled=!mine;
+    document.getElementById('question-action-sub').textContent=initialQuestion?'最初は相互回答':'3枚から選ぶ';
+    document.getElementById('peek-action').disabled=!mine||v.deckRemaining===0||initialQuestion;
+    document.getElementById('guess-action').disabled=!mine||initialQuestion;
+    document.getElementById('guess-action-sub').textContent=handSize+'まいを当てる';
+    document.getElementById('my-seen-count').textContent=(v.yourSeen||[]).length;
+
+    if(mine && !v.initialQuestionPending){
+      setBanner(v.turn===v.role?'😊 あなたの番。どの手がかりを集める？':'');
+    }else if(mine && initialQuestion){
+      setBanner('⚡ 最初は相互回答質問！');
+    }else{
+      setBanner('🧑 あいての番です…');
+    }
+    // 初期確認2まいを一度だけ表示
+    if(v.yourInitialSeen && v.log.length===0 && initialSeenShownFor!==code){
+      initialSeenShownFor=code;
+      document.getElementById('initial-seen-grid').innerHTML=v.yourInitialSeen.map(cardHTML).join('');
+      openOverlay('initial-seen-overlay');
+    }
+  }else{
+    setBanner(v.over?'🏁 対局が終了しました':'👀 観戦中です');
+  }
+
+  renderLog(v);
+
+  if(v.over){
+    renderResult(v);
+  }
+}
+
+function setBanner(text){document.getElementById('banner').textContent=text;}
+
+function renderLog(v){
+  const el=document.getElementById('game-log');
+  if(!v.log.length){el.innerHTML='<li class="answer-empty">まだ記録がありません</li>';return;}
+  const isSpectator=v.role==='spectator';
+  const rows=v.log.slice().reverse().map(entry=>{
+    const who=(isSpectator?(entry.actor==='p1'?'P1':'P2'):(entry.actor===v.role?'あなた':'あいて'));
+    const badgeClass=(isSpectator? '' : (entry.actor===v.role?'me':'opp'));
+    const badge=`<span class="who-badge ${badgeClass}">${who}</span>`;
+    if(entry.type==='peek'){
+      return `<li><span class="q-label">${badge}山札を1まい確認しました</span></li>`;
+    }
+    if(entry.type==='declare'){
+      const resultText=entry.correct?'ぴったり正解！':'はずれ';
+      return `<li><span class="q-label">${badge}「これだ！」と宣言</span><span class="q-answer">${resultText}</span></li>`;
+    }
+    // question
+    const q=QUESTION_BY_KEY[entry.key];
+    const variant=q?q.variants.find(x=>x.id===entry.variantId):null;
+    const label=variant?variant.label:entry.key;
+    const answerText=variant?variant.fmt(entry.answer):String(entry.answer);
+    let extra='';
+    if(entry.reciprocal && variant){
+      extra=` <span class="q-answer" style="background:#f5e8fb;color:#754785;">自分:${variant.fmt(entry.selfAnswer)}</span>`;
+    }
+    return `<li><span class="q-label">${badge}${label}</span><span class="q-answer">${answerText}${extra}</span></li>`;
+  });
+  el.innerHTML=rows.join('');
+}
+
+function renderResult(v){
+  const modal=document.getElementById('result-modal');
+  const isSpectator=v.role==='spectator';
+  const youWon=!isSpectator && v.winner===v.role;
+  modal.classList.toggle('lose', !isSpectator && !youWon);
+  document.getElementById('result-icon').textContent=isSpectator?'🏁':(youWon?'🎉':'😢');
+  document.getElementById('result-title').textContent=isSpectator
+    ? ((v.winner==='p1'?'P1':'P2')+'の勝ち！')
+    : (youWon?'ぴったり正解！':'あいてが正解しました');
+  document.getElementById('result-reason').textContent=v.reason==='correct'
+    ? '手札をぜんぶ見やぶりました！'
+    : '宣言した手札がちがいました。';
+
+  const meHand=isSpectator?v.hands.p1:v.yourHand;
+  const oppHand=isSpectator?v.hands.p2:v.opponentHand;
+  document.getElementById('result-me').innerHTML=(meHand||[]).map(cardHTML).join('');
+  document.getElementById('result-opp').innerHTML=(oppHand||[]).map(cardHTML).join('');
+  openOverlay('result-overlay');
+}
+
+// ── 見た山札をもう一度見る ──
+// yourSeen には、最初にこっそり確認した2まいと、あとから「山札を見る」で見たカードが
+// 見た順に入っている（サーバー側は自分の分しか返さないので、相手には見えない）。
+function openSeen(){
+  const v=latestView;
+  if(!v || v.role==='spectator')return;
+  const cards=v.yourSeen||[];
+  document.getElementById('seen-grid').innerHTML=cards.length
+    ? cards.map(cardHTML).join('')
+    : '<div class="empty-note" style="grid-column:1/-1">まだ山札を見ていません</div>';
+  openOverlay('seen-overlay');
+}
+
+// ── 推理メモ ──
+// サーバーには一切送らず、この端末のブラウザに部屋コードごとに保存する。
+// 相手にも観戦者にも見えない、自分専用の書き込み欄。
+let memoMarks=new Map();
+let motifCountMemo=['','','',''];
+let seasonCountMemo=['','','',''];
+let memoBuiltFor=null;
+
+function memoStorageKey(c){return 'suiri_online_memo_'+c;}
+
+function loadMemo(c){
+  memoMarks=new Map();motifCountMemo=['','','',''];seasonCountMemo=['','','',''];
+  try{
+    const saved=JSON.parse(localStorage.getItem(memoStorageKey(c))||'null');
+    if(saved){
+      if(Array.isArray(saved.marks))memoMarks=new Map(saved.marks.map(([i,v])=>[Number(i),v]));
+      if(Array.isArray(saved.motif))motifCountMemo=saved.motif.slice(0,4);
+      if(Array.isArray(saved.season))seasonCountMemo=saved.season.slice(0,4);
+    }
+  }catch(e){}
+}
+
+function saveMemo(){
+  if(!code)return;
+  try{
+    localStorage.setItem(memoStorageKey(code),JSON.stringify({marks:[...memoMarks],motif:motifCountMemo,season:seasonCountMemo}));
+  }catch(e){}
+}
+
+function renderMemo(){
+  let html='<div class="matrix-head">動物<br>×季節</div>';
+  html+=SEASONS.map((s,i)=>`<div class="matrix-head"><span>${s.icon}<br>${s.n}</span><input class="count-note" inputmode="numeric" maxlength="1" value="${seasonCountMemo[i]}" oninput="setAxisMemo('season',${i},this)" aria-label="${s.n}の枚数メモ" placeholder="?"></div>`).join('');
+  MOTIFS.forEach((motif,motifIndex)=>{
+    html+=`<div class="matrix-row-head"><span>${motif.icon}<br>${motif.n}</span><input class="count-note" inputmode="numeric" maxlength="1" value="${motifCountMemo[motifIndex]}" oninput="setAxisMemo('motif',${motifIndex},this)" aria-label="${motif.n}の枚数メモ" placeholder="?"></div>`;
+    for(const season of SEASONS){
+      const i=(motif.id-1)*4+(season.id-1),mark=memoMarks.get(i)||'';
+      const cls=mark==='yes'?'manual-yes':mark==='no'?'manual-no':'';
+      const sign=mark==='yes'?'○':mark==='no'?'×':'';
+      const state=mark==='yes'?'ありそう・持っている':mark==='no'?'持っていない':'未記入';
+      html+=`<button class="memo-cell ${cls}" onclick="cycleMemo(${i})" aria-label="${cardName(i)}：${state}"><img src="${imgSrc(i)}" alt=""><span class="memo-mark">${sign}</span></button>`;
+    }
+  });
+  document.getElementById('matrix').innerHTML=html;
+}
+
+function cycleMemo(i){
+  const current=memoMarks.get(i);
+  if(!current)memoMarks.set(i,'yes');
+  else if(current==='yes')memoMarks.set(i,'no');
+  else memoMarks.delete(i);
+  saveMemo();
+  renderMemo();
+}
+
+// 数字欄は入力のたびに保存するだけで描画し直さない（描画し直すと入力中にカーソルが外れるため）。
+function setAxisMemo(kind,index,input){
+  let value=String(input.value).replace(/[^0-9]/g,'').slice(0,1);
+  if(value&&Number(value)>handSize)value=String(handSize);
+  input.value=value;
+  (kind==='motif'?motifCountMemo:seasonCountMemo)[index]=value;
+  saveMemo();
+}
+
+function resetMemo(){
+  memoMarks.clear();
+  motifCountMemo=['','','',''];
+  seasonCountMemo=['','','',''];
+  saveMemo();
+  renderMemo();
+}
+
+// ── オーバーレイ ──
+function openOverlay(id){document.getElementById(id).classList.add('show');}
+function closeOverlay(id){document.getElementById(id).classList.remove('show');}
+function closeAllOverlays(){document.querySelectorAll('.overlay').forEach(o=>o.classList.remove('show'));}
+
+// ── 質問する ──
+async function openQuestions(){
+  if(!latestView || latestView.role==='spectator')return;
+  try{
+    const data=await api('room_action.php',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({code,token,action:'open_questions'})});
+    latestView=data;
+    renderQuestionHand();
+    openOverlay('question-overlay');
+  }catch(e){
+    setBanner('質問カードを取得できませんでした（'+e.message+'）');
+  }
+}
+
+function questionCardHTML(key){
+  const q=QUESTION_BY_KEY[key];
+  const style=q.category==='動物'?'animal':q.category==='季節'?'season':q.category==='くらべる'?'pair':q.category==='1まい'?'single':'strong';
+  const tag=q.category==='動物'?'どうぶつ':q.category==='季節'?'きせつ':q.category==='くらべる'?'くらべる':q.category==='1まい'?'1まい':'相互回答';
+  const icon=style==='animal'?'🐾':style==='season'?'🌸':style==='pair'?'🧩':style==='single'?'🔍':'⚡';
+  return `<button class="question-card ${style}" onclick="pickQuestionKey('${key}')"><span class="q-tag">${tag}</span><span class="q-icon">${icon}</span><span>${q.label}</span>${q.reciprocal?'<span class="q-cost">↔ ふたりとも答える</span>':''}</button>`;
+}
+
+function renderQuestionHand(){
+  const v=latestView;
+  const initialQuestion=v.initialQuestionPending && v.turn===v.role;
+  document.getElementById('question-title').textContent=initialQuestion?'⚡ 最初の相互回答質問':'💬 どれを聞く？';
+  document.getElementById('question-modal-note').textContent=initialQuestion
+    ? '動物か季節の数・種類を聞きます。あなたも同じ問いに答えます。'
+    : '質問の山からランダムに出た3枚です。';
+  const offer=v.yourOffer||[];
+  document.getElementById('question-hand').innerHTML=offer.length
+    ? offer.map(questionCardHTML).join('')
+    : '<div class="empty-note" style="grid-column:1/-1">質問カードをぜんぶ使いました</div>';
+}
+
+function pickQuestionKey(key){
+  const q=QUESTION_BY_KEY[key];
+  pendingKey=key;
+  if(q.variants.length===1){
+    askQuestion(key, q.variants[0].id);
+    return;
+  }
+  document.getElementById('variant-title').textContent=q.reciprocal?'⚡ 相互回答質問を完成':'🔎 質問を完成させよう';
+  document.getElementById('variant-note').textContent=q.reciprocal
+    ? '聞きたい内容を選ぼう。この質問は、あなたも答えます。'
+    : '（　）に入れる内容を選ぼう。';
+  document.getElementById('variant-grid').innerHTML=q.variants.map(v=>
+    `<button class="variant-btn" onclick="askQuestion('${key}','${v.id}')">${v.label}</button>`
+  ).join('');
+  closeOverlay('question-overlay');
+  openOverlay('variant-overlay');
+}
+
+function backToQuestionHand(){
+  closeOverlay('variant-overlay');
+  openOverlay('question-overlay');
+}
+
+async function askQuestion(key, variantId){
+  try{
+    const data=await api('room_action.php',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({code,token,action:'ask_question',payload:{key,variantId}})});
+    latestView=data;
+    closeOverlay('variant-overlay');closeOverlay('question-overlay');
+    const q=QUESTION_BY_KEY[key];
+    const variant=q.variants.find(x=>x.id===variantId);
+    const entry=data.log[data.log.length-1];
+    document.getElementById('answer-question').textContent=variant.label;
+    document.getElementById('answer-big').textContent=variant.fmt(entry.answer);
+    document.getElementById('answer-self').textContent=entry.reciprocal
+      ? ('あなたの答え：'+variant.fmt(entry.selfAnswer))
+      : '';
+    openOverlay('answer-overlay');
+    render();
+  }catch(e){
+    setBanner('質問できませんでした（'+e.message+'）');
+    closeAllOverlays();
+  }
+}
+
+// ── 山札を見る ──
+async function doPeek(){
+  try{
+    const data=await api('room_action.php',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({code,token,action:'peek'})});
+    latestView=data;
+    const seen=data.yourSeen;
+    const last=seen[seen.length-1];
+    document.getElementById('peek-card-grid').innerHTML=cardHTML(last);
+    openOverlay('peek-overlay');
+    render();
+  }catch(e){
+    setBanner('山札を見られませんでした（'+e.message+'）');
+  }
+}
+
+// ── これだ！宣言 ──
+function openGuess(){
+  guessSet=new Set();guessArmed=false;
+  document.getElementById('guess-need').textContent=handSize;
+  renderGuess();
+  openOverlay('guess-overlay');
+}
+function renderGuess(){
+  document.getElementById('guess-grid').innerHTML=CARDS.map(c=>{
+    const sel=guessSet.has(c.index);
+    return `<button class="guess-card ${sel?'selected':''}" onclick="toggleGuess(${c.index})"><img src="${imgSrc(c.index)}" alt="${cardName(c.index)}"><span class="g-label">${c.motif.icon}${c.season.icon}</span></button>`;
+  }).join('');
+  document.getElementById('guess-selected').textContent=guessSet.size;
+  const btn=document.getElementById('declare-btn');
+  btn.disabled=guessSet.size!==handSize;
+  btn.classList.toggle('armed', guessArmed && guessSet.size===handSize);
+  btn.textContent=guessSet.size!==handSize?`あと${handSize-guessSet.size}まい選んでね`:(guessArmed?'本当にこの手で勝負！':'この手で宣言する');
+}
+function toggleGuess(i){
+  if(guessSet.has(i))guessSet.delete(i);
+  else if(guessSet.size<handSize)guessSet.add(i);
+  guessArmed=false;
+  renderGuess();
+}
+function clearGuess(){guessSet=new Set();guessArmed=false;renderGuess();}
+async function declareGuess(){
+  if(guessSet.size!==handSize)return;
+  if(!guessArmed){guessArmed=true;renderGuess();return;}
+  try{
+    const data=await api('room_action.php',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({code,token,action:'declare',payload:{cardIndices:[...guessSet]}})});
+    latestView=data;
+    closeOverlay('guess-overlay');
+    render();
+  }catch(e){
+    setBanner('宣言できませんでした（'+e.message+'）');
+  }
+}
+
+// ── 起動時：URLの?codeやローカル保存済みセッションを見て、遷移先を決める ──
+(function init(){
+  const params=new URLSearchParams(location.search);
+  const urlCode=(params.get('code')||'').toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,6);
+  if(urlCode){
+    document.getElementById('join-code-input').value=urlCode;
+    const saved=loadSession(urlCode);
+    if(saved && saved.token){
+      code=urlCode; token=saved.token; myRole=saved.role;
+      document.getElementById('landing-screen').style.display='none';
+      document.getElementById('game-screen').style.display='block';
+      startPolling();
+    }
+  }
+})();
+</script>
+</body>
+</html>

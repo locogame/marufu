@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>四季のおさんぽ</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Kaisei+Decol:wght@400;700&family=M+PLUS+Rounded+1c:wght@400;700;800&display=swap');
+:root{
+  --sp:#e0608a;--su:#2a9d8f;--au:#e07b39;--wi:#4a7fb5;
+  --sp-l:#ffd6e8;--su-l:#b8f0e8;--au-l:#ffd8aa;--wi-l:#c0d8f8;
+  --bg:#fdf6ee;--cb:#5a3f2a;--text:#2d1f1f;--ui:#fff9f2;
+  --sh:rgba(80,40,20,0.15);
+  --me:#e0608a;--ai:#4a7fb5;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;overflow:hidden;}
+body{font-family:'M PLUS Rounded 1c',sans-serif;background:var(--bg);color:var(--text);display:flex;flex-direction:column;height:100dvh;}
+
+/* HEADER */
+header{flex-shrink:0;background:linear-gradient(120deg,#f9a8c9 0%,#6dd0c5 38%,#f4a261 68%,#90b8e0 100%);padding:7px 12px 5px;padding-top:calc(7px + env(safe-area-inset-top,0px));text-align:center;box-shadow:0 2px 8px var(--sh);}
+header h1{font-family:'Kaisei Decol',serif;font-size:clamp(.9rem,4vw,1.2rem);color:#fff;text-shadow:0 2px 5px rgba(0,0,0,.28);letter-spacing:.04em;}
+header p{font-size:.57rem;color:rgba(255,255,255,.9);margin-top:1px;}
+
+/* ── SETUP ── */
+#setup-screen{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;display:flex;flex-direction:column;align-items:center;gap:13px;padding:16px 14px calc(18px + env(safe-area-inset-bottom,0px));}
+.section-label{font-size:.74rem;font-weight:800;color:#666;text-align:center;}
+.record{font-size:.68rem;font-weight:800;color:var(--cb);background:white;border-radius:20px;padding:5px 16px;border:1px solid #e8d9c8;box-shadow:0 2px 5px var(--sh);}
+.diff-row{display:flex;gap:7px;width:100%;max-width:350px;}
+.diff-btn{flex:1;padding:9px 4px;border:2.5px solid #ddd;border-radius:11px;background:white;cursor:pointer;text-align:center;font-family:'M PLUS Rounded 1c',sans-serif;font-size:.68rem;font-weight:800;box-shadow:0 2px 5px var(--sh);transition:all .15s;color:#888;}
+.diff-btn:active{transform:scale(.92);}
+.diff-btn .di{font-size:1.05rem;display:block;}
+.diff-btn .dn{font-size:.55rem;color:#aaa;display:block;margin-top:2px;font-weight:400;}
+.diff-btn.lv1.sel{border-color:#82c99a;background:#f0fff4;color:#2e7d52;}
+.diff-btn.lv2.sel{border-color:var(--au);background:#fff8f0;color:#a05010;}
+.diff-btn.lv3.sel{border-color:var(--sp);background:#fff0f5;color:#9a2050;}
+.first-row{display:flex;gap:7px;width:100%;max-width:350px;}
+.first-btn{flex:1;padding:8px 4px;border:2.5px solid #ddd;border-radius:11px;background:white;cursor:pointer;text-align:center;font-family:'M PLUS Rounded 1c',sans-serif;font-size:.66rem;font-weight:800;box-shadow:0 2px 5px var(--sh);color:#888;transition:all .15s;}
+.first-btn:active{transform:scale(.92);}
+.first-btn.sel{border-color:var(--wi);background:#f0f6ff;color:#2a5a90;}
+.rules-box{background:white;border-radius:13px;padding:12px 14px;width:100%;max-width:350px;border:1px solid #e8d9c8;box-shadow:0 2px 6px var(--sh);}
+.rules-box h3{font-size:.72rem;font-weight:800;color:var(--sp);margin-bottom:6px;}
+.rules-box p{font-size:.63rem;line-height:1.7;color:#444;}
+.rules-box p+p{margin-top:5px;}
+.score-table{display:flex;gap:6px;margin-top:6px;}
+.score-cell{flex:1;background:#fdf3e0;border-radius:9px;padding:6px 4px;text-align:center;font-size:.62rem;font-weight:800;color:var(--cb);}
+.score-cell b{display:block;font-size:.85rem;color:var(--au);}
+.tag{display:inline-block;padding:1px 6px;border-radius:4px;font-size:.57rem;font-weight:800;color:white;margin:0 1px;}
+.t-me{background:var(--me);}.t-ai{background:var(--ai);}.t-win{background:#c8a000;}
+.start-btn{padding:13px 0;width:min(220px,76%);background:linear-gradient(135deg,var(--sp),var(--su));color:white;border:none;border-radius:26px;font-size:.95rem;font-family:'M PLUS Rounded 1c',sans-serif;font-weight:800;cursor:pointer;box-shadow:0 4px 14px var(--sh);}
+.start-btn:active{transform:scale(.96);}
+
+/* ── GAME ── */
+#game-screen{display:none;flex:1;overflow:hidden;flex-direction:column;align-items:center;gap:6px;padding:8px 10px calc(12px + env(safe-area-inset-bottom,0px));}
+.gametop{display:flex;align-items:stretch;gap:6px;width:100%;max-width:420px;}
+.back-btn{padding:6px 10px;border:none;border-radius:11px;background:white;box-shadow:0 2px 5px var(--sh);font-family:'M PLUS Rounded 1c',sans-serif;font-size:.62rem;font-weight:800;color:var(--cb);cursor:pointer;flex-shrink:0;}
+.back-btn:active{transform:scale(.93);}
+.side{flex:1;background:white;border-radius:11px;padding:4px 7px;box-shadow:0 2px 5px var(--sh);border:2px solid transparent;transition:border-color .2s;min-width:0;}
+.side .top{display:flex;align-items:center;font-size:.6rem;font-weight:800;}
+.side .pts{margin-left:auto;font-size:.85rem;}
+.side.p{color:var(--me);}
+.side.a{color:var(--ai);}
+.side.turn-now{border-color:currentColor;}
+.side .chips2{font-size:.56rem;color:#666;line-height:1.5;min-height:1.5em;font-weight:700;}
+#msg{width:100%;max-width:420px;text-align:center;background:var(--ui);border:1px solid #e8d9c8;border-radius:11px;padding:5px 10px;font-size:.68rem;font-weight:800;color:var(--cb);box-shadow:0 2px 5px var(--sh);min-height:1.9em;display:flex;align-items:center;justify-content:center;}
+
+#grid-wrap{flex:1;display:flex;align-items:center;justify-content:center;width:100%;min-height:0;}
+#grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;width:min(94vw,400px,calc((100dvh - 205px)*.69));}
+.card{position:relative;aspect-ratio:654/911;border-radius:10px;overflow:hidden;border:3px solid #e0d0c0;background:#eee;box-shadow:0 2px 6px var(--sh);transition:transform .15s,border-color .2s,box-shadow .2s;}
+.card img{width:100%;height:100%;object-fit:cover;display:block;}
+.chips{position:absolute;top:0;left:0;right:0;display:flex;justify-content:space-between;padding:2px;pointer-events:none;}
+.chip{font-size:.62rem;line-height:1;padding:2px 3px;border-radius:6px;background:rgba(255,255,255,.88);box-shadow:0 1px 3px rgba(0,0,0,.18);}
+.chip.c-sp{background:var(--sp-l);}.chip.c-su{background:var(--su-l);}.chip.c-au{background:var(--au-l);}.chip.c-wi{background:var(--wi-l);}
+
+.card.valid{border-color:#f0b840;cursor:pointer;animation:glow 1.1s ease-in-out infinite;}
+@keyframes glow{0%,100%{box-shadow:0 0 4px 1px rgba(240,184,64,.55);}50%{box-shadow:0 0 12px 4px rgba(240,184,64,.85);}}
+.card.valid:active{transform:scale(.93);}
+.card.taken-p{border-color:var(--me);}
+.card.taken-a{border-color:var(--ai);}
+.card.taken-p img,.card.taken-a img{opacity:.85;}
+.mark{position:absolute;bottom:2px;left:2px;width:18px;height:18px;border-radius:50%;background:rgba(255,255,255,.92);display:none;align-items:center;justify-content:center;font-size:.7rem;box-shadow:0 1px 3px rgba(0,0,0,.25);animation:stamp .25s cubic-bezier(.2,1.8,.4,1);}
+.card.taken-p .mark,.card.taken-a .mark{display:flex;}
+@keyframes stamp{from{transform:scale(2.2);opacity:0;}to{transform:scale(1);opacity:1;}}
+.card.walker::after{content:'🐾';position:absolute;bottom:2px;left:50%;transform:translateX(-50%);font-size:clamp(1rem,5.5vw,1.5rem);filter:drop-shadow(0 2px 3px rgba(0,0,0,.35));animation:bob .7s ease-in-out infinite alternate;}
+@keyframes bob{from{transform:translateX(-50%) translateY(0);}to{transform:translateX(-50%) translateY(-3px);}}
+
+/* ── RESULT ── */
+#result-overlay{display:none;position:fixed;inset:0;background:rgba(60,35,20,.55);z-index:50;align-items:center;justify-content:center;padding:20px;}
+#result-overlay.show{display:flex;}
+.result-card{background:var(--ui);border-radius:20px;padding:18px 18px calc(18px + env(safe-area-inset-bottom,0px));max-width:330px;width:100%;text-align:center;box-shadow:0 10px 40px rgba(0,0,0,.3);animation:pop .4s cubic-bezier(.2,1.6,.4,1);max-height:88dvh;overflow-y:auto;}
+@keyframes pop{from{transform:scale(.6);opacity:0;}to{transform:scale(1);opacity:1;}}
+.result-card h2{font-family:'Kaisei Decol',serif;font-size:1.25rem;margin-bottom:8px;}
+.result-card h2.win{color:var(--sp);}
+.result-card h2.lose{color:var(--wi);}
+.result-card h2.draw{color:#888;}
+.bd-wrap{display:flex;gap:8px;margin-bottom:10px;}
+.bd{flex:1;background:white;border-radius:12px;padding:8px 7px;border:2px solid #eee;text-align:left;}
+.bd.bp{border-color:var(--sp-l);}
+.bd.ba{border-color:var(--wi-l);}
+.bd .bd-head{font-size:.66rem;font-weight:800;display:flex;margin-bottom:4px;}
+.bd.bp .bd-head{color:var(--me);}
+.bd.ba .bd-head{color:var(--ai);}
+.bd .bd-total{margin-left:auto;font-size:.82rem;}
+.bd .li{font-size:.6rem;color:#555;font-weight:700;line-height:1.7;display:flex;}
+.bd .li .pt{margin-left:auto;color:var(--au);}
+.result-card .rec2{font-size:.64rem;color:#999;font-weight:700;margin-bottom:12px;}
+.result-btns{display:flex;gap:8px;justify-content:center;}
+.cbtn{padding:11px 14px;border:none;border-radius:22px;font-family:'M PLUS Rounded 1c',sans-serif;font-size:.74rem;font-weight:800;cursor:pointer;box-shadow:0 3px 10px var(--sh);}
+.cbtn:active{transform:scale(.94);}
+.cbtn.primary{background:linear-gradient(135deg,var(--sp),var(--au));color:white;flex:1;}
+.cbtn.ghost{background:white;color:var(--cb);}
+
+.confetti{position:fixed;top:-30px;z-index:60;font-size:1.2rem;pointer-events:none;animation:fall linear forwards;}
+@keyframes fall{to{transform:translateY(110dvh) rotate(540deg);opacity:.7;}}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🐾 四季のおさんぽ</h1>
+  <p>ひとつの🐾をかわりばんこに歩かせて カードをひろい あつめて 点数をきそおう</p>
+</header>
+
+<!-- せってい画面 -->
+<div id="setup-screen">
+  <div class="record" id="record-label">せいせき：0勝 0敗 0分</div>
+
+  <div class="section-label">🤖 あいての強さ</div>
+  <div class="diff-row">
+    <button class="diff-btn lv1" id="lv1" onclick="setLevel(1)"><span class="di">🐣</span>よちよち<span class="dn">めのまえの点だけ</span></button>
+    <button class="diff-btn lv2" id="lv2" onclick="setLevel(2)"><span class="di">🦊</span>ふつう<span class="dn">すこし先読み</span></button>
+    <button class="diff-btn lv3" id="lv3" onclick="setLevel(3)"><span class="di">🐲</span>めちゃつよ<span class="dn">さんぽの達人</span></button>
+  </div>
+
+  <div class="section-label">🎬 どちらが先？（あとの人は +1点もらえるよ）</div>
+  <div class="first-row">
+    <button class="first-btn" id="fp" onclick="setFirst('p')">😊 あなたから</button>
+    <button class="first-btn" id="fa" onclick="setFirst('a')">🤖 AIから</button>
+    <button class="first-btn" id="fr" onclick="setFirst('r')">🎲 ランダム</button>
+  </div>
+
+  <div class="rules-box">
+    <h3>📖 あそびかた</h3>
+    <p>① 16まいのカードの上を、<b>ひとつの🐾</b>が歩くよ。<span class="t-me tag">あなた</span>と<span class="t-ai tag">AI</span>がかわりばんこに🐾を動かすよ。</p>
+    <p>② さいしょの人は、すきなカードに🐾をおいて そのカードをゲット。そのあとは <b>🐾のとなり（上下左右）にのこっているカード</b>にだけ進めて、進んだ先のカードをゲット！</p>
+    <p>③ 自分の番に すすめる場所がなくなったら、そこで おさんぽおしまい。とったカードで点数をかぞえるよ。</p>
+    <p>④ 「おなじ動物」や「おなじ季節」をあつめると点数になるよ。1まいのカードは 動物と季節の<b>りょうほうに数えてOK！</b></p>
+    <div class="score-table">
+      <div class="score-cell">2まい<b>1点</b></div>
+      <div class="score-cell">3まい<b>3点</b></div>
+      <div class="score-cell">4まい<b>7点</b></div>
+    </div>
+    <p style="margin-top:6px;">⑤ 点数が多いほうの<span class="t-win tag">勝ち！</span> わざと行き止まりにして早めにおさんぽを終わらせるのも作戦だよ。</p>
+  </div>
+
+  <button class="start-btn" onclick="startGame()">▶ おさんぽに出発！</button>
+</div>
+
+<!-- ゲーム画面 -->
+<div id="game-screen">
+  <div class="gametop">
+    <button class="back-btn" onclick="quitGame()">← やめる</button>
+    <div class="side p" id="side-p"><div class="top">😊 あなた<span class="pts" id="pts-p">0点</span></div><div class="chips2" id="chips-p"></div></div>
+    <div class="side a" id="side-a"><div class="top">🤖 AI<span class="pts" id="pts-a">0点</span></div><div class="chips2" id="chips-a"></div></div>
+  </div>
+  <div id="msg"></div>
+  <div id="grid-wrap"><div id="grid"></div></div>
+</div>
+
+<!-- けっか画面 -->
+<div id="result-overlay">
+  <div class="result-card">
+    <h2 id="result-title"></h2>
+    <div class="bd-wrap">
+      <div class="bd bp"><div class="bd-head">😊 あなた<span class="bd-total" id="bd-total-p"></span></div><div id="bd-list-p"></div></div>
+      <div class="bd ba"><div class="bd-head">🤖 AI<span class="bd-total" id="bd-total-a"></span></div><div id="bd-list-a"></div></div>
+    </div>
+    <div class="rec2" id="result-record"></div>
+    <div class="result-btns">
+      <button class="cbtn ghost" onclick="quitGame()">⚙ せってい</button>
+      <button class="cbtn primary" onclick="startGame()">もういちど！</button>
+    </div>
+  </div>
+</div>
+
+<script>
+'use strict';
+// ── データ ──
+const ANIMALS=[
+  {id:1,n:'アヒル',i:'🦆'},
+  {id:2,n:'クマ',i:'🐻'},
+  {id:3,n:'リス',i:'🐿️'},
+  {id:4,n:'ウサギ',i:'🐰'}
+];
+const SEASONS=[
+  {id:1,n:'はる',i:'🌸',cls:'sp'},
+  {id:2,n:'なつ',i:'🌊',cls:'su'},
+  {id:3,n:'あき',i:'🍁',cls:'au'},
+  {id:4,n:'ふゆ',i:'⛄',cls:'wi'}
+];
+const imgSrc=(a,s)=>`../イラスト/${a}-${s}.jpg`;
+const SET_PTS=[0,0,1,3,7]; // あつめた枚数→点数（2枚=1点 3枚=3点 4枚=7点）
+const SECOND_BONUS=1;      // あとの人がもらえる点
+
+// ── せいせきの保存 ──
+const SAVE_KEY='marufu_osanpo_v1';
+let rec={w:0,l:0,d:0};
+try{rec=JSON.parse(localStorage.getItem(SAVE_KEY))||rec;}catch(e){}
+function persist(){try{localStorage.setItem(SAVE_KEY,JSON.stringify(rec));}catch(e){}}
+function recText(){return `せいせき：${rec.w}勝 ${rec.l}敗 ${rec.d}分`;}
+document.getElementById('record-label').textContent=recText();
+
+// ── せってい ──
+let level=2, firstOpt='r';
+function setLevel(v){
+  level=v;
+  for(const n of [1,2,3])document.getElementById('lv'+n).classList.toggle('sel',n===v);
+}
+function setFirst(v){
+  firstOpt=v;
+  document.getElementById('fp').classList.toggle('sel',v==='p');
+  document.getElementById('fa').classList.toggle('sel',v==='a');
+  document.getElementById('fr').classList.toggle('sel',v==='r');
+}
+setLevel(2);setFirst('r');
+
+// ── ゲームの状態 ──
+const P=1,A=2; // だれが取ったか：1=あなた 2=AI
+let board=[];   // カードのならび
+let taken=[];   // マスごとの記録（0=まだある）
+let walker=-1;  // 🐾のいる場所
+let turn=P;
+let second=A;   // あとの人（+1点もらえる）
+let over=false;
+let cardEls=[];
+
+function shuffleBoard(){
+  board=[];
+  for(const an of ANIMALS)for(const se of SEASONS)board.push({a:an.id,s:se.id});
+  for(let i=board.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [board[i],board[j]]=[board[j],board[i]];
+  }
+}
+
+function adj(i){
+  const r=i>>2,c=i&3,res=[];
+  if(r>0)res.push(i-4);
+  if(r<3)res.push(i+4);
+  if(c>0)res.push(i-1);
+  if(c<3)res.push(i+1);
+  return res;
+}
+function movesOf(t,w){
+  if(w<0){const res=[];for(let i=0;i<16;i++)if(!t[i])res.push(i);return res;}
+  return adj(w).filter(i=>!t[i]);
+}
+// side の点数（動物セット＋季節セット＋あとの人ボーナス）
+function calcScore(t,side){
+  const ca=[0,0,0,0,0],cs=[0,0,0,0,0];
+  for(let i=0;i<16;i++)if(t[i]===side){ca[board[i].a]++;cs[board[i].s]++;}
+  let pts=side===second?SECOND_BONUS:0;
+  for(let k=1;k<=4;k++)pts+=SET_PTS[ca[k]]+SET_PTS[cs[k]];
+  return pts;
+}
+
+// ── ゲーム開始 ──
+function startGame(){
+  shuffleBoard();
+  taken=new Array(16).fill(0);
+  walker=-1;over=false;
+  turn=firstOpt==='r'?(Math.random()<.5?P:A):(firstOpt==='p'?P:A);
+  second=turn===P?A:P;
+
+  const grid=document.getElementById('grid');
+  grid.innerHTML='';
+  cardEls=[];
+  board.forEach((cd,i)=>{
+    const an=ANIMALS.find(x=>x.id===cd.a),se=SEASONS.find(x=>x.id===cd.s);
+    const el=document.createElement('div');
+    el.className='card';
+    el.innerHTML=`<img src="${imgSrc(cd.a,cd.s)}" alt="${an.n}の${se.n}">
+      <div class="chips"><span class="chip c-${se.cls}">${se.i}</span><span class="chip">${an.i}</span></div>
+      <div class="mark"></div>`;
+    el.onclick=()=>tapCard(i);
+    grid.appendChild(el);
+    cardEls.push(el);
+  });
+
+  document.getElementById('setup-screen').style.display='none';
+  document.getElementById('result-overlay').classList.remove('show');
+  document.getElementById('game-screen').style.display='flex';
+  render();
+  if(turn===A)setTimeout(aiTurn,800);
+}
+
+function chipsText(side){
+  const ca=[0,0,0,0,0],cs=[0,0,0,0,0];
+  for(let i=0;i<16;i++)if(taken[i]===side){ca[board[i].a]++;cs[board[i].s]++;}
+  const parts=[];
+  ANIMALS.forEach(x=>{if(ca[x.id])parts.push(x.i+'×'+ca[x.id]);});
+  SEASONS.forEach(x=>{if(cs[x.id])parts.push(x.i+'×'+cs[x.id]);});
+  return parts.join(' ')||'（まだなし）';
+}
+
+function render(){
+  const valid=(!over&&turn===P)?movesOf(taken,walker):[];
+  cardEls.forEach((el,i)=>{
+    el.classList.toggle('taken-p',taken[i]===P);
+    el.classList.toggle('taken-a',taken[i]===A);
+    el.classList.toggle('valid',valid.includes(i));
+    el.classList.toggle('walker',i===walker);
+    el.querySelector('.mark').textContent=taken[i]===P?'⭐':taken[i]===A?'🤖':'';
+  });
+  document.getElementById('pts-p').textContent=calcScore(taken,P)+'点';
+  document.getElementById('pts-a').textContent=calcScore(taken,A)+'点';
+  document.getElementById('chips-p').textContent=chipsText(P);
+  document.getElementById('chips-a').textContent=chipsText(A);
+  document.getElementById('side-p').classList.toggle('turn-now',!over&&turn===P);
+  document.getElementById('side-a').classList.toggle('turn-now',!over&&turn===A);
+  if(over)return;
+  const msg=document.getElementById('msg');
+  if(turn===P){
+    msg.textContent=walker<0?'😊 あなたの番！すきなカードをえらんで おさんぽスタート！':'😊 あなたの番！🐾のとなりの ひかっているカードへ進もう';
+  }else{
+    msg.textContent='🤖 AIが みちを かんがえちゅう…';
+  }
+}
+
+// ── カードを取る ──
+function tapCard(i){
+  if(over||turn!==P)return;
+  if(!movesOf(taken,walker).includes(i))return;
+  claim(P,i);
+}
+
+function claim(side,i){
+  taken[i]=side;
+  walker=i;
+  turn=side===P?A:P;
+  // つぎの人が進めなければ、おさんぽ終了
+  if(movesOf(taken,walker).length===0){endGame();return;}
+  render();
+  if(turn===A)setTimeout(aiTurn,700);
+}
+
+// ── AIの思考 ──
+// negamax = 「自分が最善→相手も最善→…」と先読みするさがし方
+function nega(t,w,side,depth,alpha,beta){
+  const mv=movesOf(t,w);
+  const other=side===P?A:P;
+  if(mv.length===0)return calcScore(t,side)-calcScore(t,other);
+  if(depth<=0)return calcScore(t,side)-calcScore(t,other)+0.3*mv.length;
+  let best=-Infinity;
+  for(const m of mv){
+    t[m]=side;
+    const sc=-nega(t,m,other,depth-1,-beta,-alpha);
+    t[m]=0;
+    if(sc>best)best=sc;
+    if(best>alpha)alpha=best;
+    if(alpha>=beta)break;
+  }
+  return best;
+}
+
+function aiPick(){
+  const mv=movesOf(taken,walker);
+  if(level===1){
+    // よちよち：いますぐ点が上がる場所をえらぶだけ
+    let best=[],bestSc=-Infinity;
+    for(const m of mv){
+      taken[m]=A;
+      const sc=calcScore(taken,A);
+      taken[m]=0;
+      if(sc>bestSc){bestSc=sc;best=[m];}
+      else if(sc===bestSc)best.push(m);
+    }
+    return best[Math.floor(Math.random()*best.length)];
+  }
+  const remaining=mv.length===16?16:taken.filter(x=>!x).length;
+  const depth=level===2?4:(remaining<=13?remaining:9);
+  let best=[],bestSc=-Infinity;
+  const t=taken.slice();
+  for(const m of mv){
+    t[m]=A;
+    const sc=-nega(t,m,P,depth-1,-Infinity,Infinity);
+    t[m]=0;
+    if(sc>bestSc){bestSc=sc;best=[m];}
+    else if(sc===bestSc)best.push(m);
+  }
+  return best[Math.floor(Math.random()*best.length)];
+}
+
+function aiTurn(){
+  if(over||turn!==A)return;
+  claim(A,aiPick());
+}
+
+// ── けっか ──
+function breakdown(side){
+  const ca=[0,0,0,0,0],cs=[0,0,0,0,0];
+  for(let i=0;i<16;i++)if(taken[i]===side){ca[board[i].a]++;cs[board[i].s]++;}
+  const rows=[];
+  ANIMALS.forEach(x=>{if(SET_PTS[ca[x.id]])rows.push([`${x.i} ${x.n}×${ca[x.id]}`,SET_PTS[ca[x.id]]]);});
+  SEASONS.forEach(x=>{if(SET_PTS[cs[x.id]])rows.push([`${x.i} ${x.n}×${cs[x.id]}`,SET_PTS[cs[x.id]]]);});
+  if(side===second)rows.push(['🍙 あとの人ボーナス',SECOND_BONUS]);
+  if(!rows.length)rows.push(['（点なし）',0]);
+  return rows;
+}
+
+function endGame(){
+  over=true;
+  render();
+  const sp=calcScore(taken,P),sa=calcScore(taken,A);
+  const title=document.getElementById('result-title');
+  let winner=null;
+  if(sp>sa){winner=P;rec.w++;title.textContent='🎉 あなたの勝ち！';title.className='win';}
+  else if(sa>sp){winner=A;rec.l++;title.textContent='😢 AIの勝ち…';title.className='lose';}
+  else{rec.d++;title.textContent='🤝 ひきわけ！';title.className='draw';}
+  persist();
+  document.getElementById('msg').textContent=winner===P?'🎉 あなたの勝ち！':winner===A?'😢 AIの勝ち…':'🤝 ひきわけ！';
+
+  document.getElementById('bd-total-p').textContent=sp+'点';
+  document.getElementById('bd-total-a').textContent=sa+'点';
+  for(const [side,listId] of [[P,'bd-list-p'],[A,'bd-list-a']]){
+    const box=document.getElementById(listId);
+    box.innerHTML='';
+    breakdown(side).forEach(([label,pt])=>{
+      const d=document.createElement('div');
+      d.className='li';
+      d.innerHTML=`<span>${label}</span><span class="pt">${pt?pt+'点':''}</span>`;
+      box.appendChild(d);
+    });
+  }
+  document.getElementById('result-record').textContent=recText();
+  document.getElementById('record-label').textContent=recText();
+
+  setTimeout(()=>{
+    document.getElementById('result-overlay').classList.add('show');
+    if(winner===P)confetti();
+  },900);
+}
+
+function confetti(){
+  const emo=['🌸','🌊','🍁','⛄','⭐','🐾','🎀'];
+  for(let i=0;i<26;i++){
+    const c=document.createElement('div');
+    c.className='confetti';
+    c.textContent=emo[Math.floor(Math.random()*emo.length)];
+    c.style.left=Math.random()*100+'vw';
+    c.style.animationDuration=(2+Math.random()*2.5)+'s';
+    c.style.animationDelay=(Math.random()*.8)+'s';
+    document.body.appendChild(c);
+    setTimeout(()=>c.remove(),5500);
+  }
+}
+
+function quitGame(){
+  over=true;
+  document.getElementById('result-overlay').classList.remove('show');
+  document.getElementById('game-screen').style.display='none';
+  document.getElementById('setup-screen').style.display='flex';
+}
+</script>
+</body>
+</html>
