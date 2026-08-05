@@ -343,7 +343,7 @@ header p{font-size:.62rem;color:rgba(255,255,255,.94);font-weight:700;margin-top
 
   <div class="action-title" id="action-title">手番の行動を 1つえらぼう</div>
   <div class="actions">
-    <button class="action q" id="question-action" onclick="openQuestions()"><span class="ico">💬</span>質問する<span class="sub" id="question-action-sub">ランダムな3枚から選ぶ</span></button>
+    <button class="action q" id="question-action" onclick="openQuestions()"><span class="ico">💬</span>質問する<span class="sub" id="question-action-sub">ランダムな4枚から選ぶ</span></button>
     <button class="action peek" id="peek-action" onclick="playerPeek()"><span class="ico">🃏</span>山札を見る<span class="sub">1まいを自分だけ確認</span></button>
     <button class="action guess" id="guess-action" onclick="openGuess()"><span class="ico">🎯</span>これだ！<span class="sub">4まいを当てる</span></button>
   </div>
@@ -368,7 +368,7 @@ header p{font-size:.62rem;color:rgba(255,255,255,.94);font-weight:700;margin-top
   <div class="modal">
     <div class="modal-head"><h2 id="question-title">💬 どれを聞く？</h2><button class="xbtn" onclick="closeOverlay('question-overlay')" aria-label="閉じる">×</button></div>
     <div class="modal-body">
-      <p class="modal-note" id="question-modal-note">質問の山からランダムに出た3枚です。（　）の中身はカードを選んだあとに決められます。</p>
+      <p class="modal-note" id="question-modal-note">質問の山からランダムに出た4枚です。（　）の中身はカードを選んだあとに決められます。</p>
       <div class="question-deck-note" id="question-deck-note"></div>
       <div class="question-hand" id="question-hand"></div>
     </div>
@@ -462,7 +462,7 @@ header p{font-size:.62rem;color:rgba(255,255,255,.94);font-weight:700;margin-top
 'use strict';
 
 const HAND_SIZE=4;
-const QUESTION_CHOICES=3;
+const QUESTION_CHOICES=4;
 const INITIAL_SEEN_COUNT=2;
 const ANALYTICS_ENDPOINT='question_log.php';
 const ANALYTICS_SESSION_ID=makeAnalyticsId();
@@ -565,7 +565,7 @@ function makeQuestions(){
 }
 const QUESTIONS=makeQuestions();
 const QUESTION_BY_KEY=Object.fromEntries(QUESTIONS.map(q=>[q.key,q]));
-const INITIAL_QUESTIONS=QUESTIONS.filter(q=>q.reciprocal);
+const INITIAL_QUESTIONS=QUESTIONS.filter(q=>q.reciprocal&&(q.key==='strong-animal-count'||q.key==='strong-season-count'));
 const NORMAL_QUESTIONS=QUESTIONS.filter(q=>!q.reciprocal);
 // 通常カードは1枚（no）につき easy＝表を必ず持つ。裏（hard）は無いカードもある。1ゲームで使えるのは1枚1回だけ。
 const NORMAL_CARDS=[...new Set(NORMAL_QUESTIONS.map(q=>q.no))].sort((a,b)=>a-b).map(no=>({

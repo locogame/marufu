@@ -271,7 +271,7 @@ header p{font-size:.62rem;color:rgba(255,255,255,.94);font-weight:700;margin-top
   <div id="spectator-note" class="spectator-note" style="display:none">👀 観戦モード：両方の手札が見えています</div>
 
   <div class="actions" id="action-row">
-    <button class="action q" id="question-action" onclick="openQuestions()"><span class="ico">💬</span>質問する<span class="sub" id="question-action-sub">3枚から選ぶ</span></button>
+    <button class="action q" id="question-action" onclick="openQuestions()"><span class="ico">💬</span>質問する<span class="sub" id="question-action-sub">4枚から選ぶ</span></button>
     <button class="action peek" id="peek-action" onclick="doPeek()"><span class="ico">👀</span>山札を見る<span class="sub">1まい確認</span></button>
     <button class="action guess" id="guess-action" onclick="openGuess()"><span class="ico">🎯</span>これだ！<span class="sub" id="guess-action-sub">当てる</span></button>
   </div>
@@ -424,7 +424,7 @@ for(const motif of MOTIFS)for(const season of SEASONS){
 const bit=i=>(1<<i)>>>0;
 const has=(mask,i)=>!!((mask>>>i)&1);
 function popcount(x){x>>>=0;x=x-((x>>>1)&0x55555555);x=(x&0x33333333)+((x>>>2)&0x33333333);return (((x+(x>>>4))&0x0F0F0F0F)*0x01010101)>>>24;}
-const imgSrc=i=>`../イラスト/${CARDS[i].motif.id}-${CARDS[i].season.id}.jpg`;
+const imgSrc=i=>`../../イラスト/${CARDS[i].motif.id}-${CARDS[i].season.id}.jpg`;
 const cardName=i=>`${CARDS[i].season.n}の${CARDS[i].motif.n}`;
 function cardHTML(i){
   const c=CARDS[i];
@@ -649,7 +649,7 @@ function render(){
   if(!isSpectator){
     const initialQuestion=v.initialQuestionPending && v.turn===v.role;
     document.getElementById('question-action').disabled=!mine;
-    document.getElementById('question-action-sub').textContent=initialQuestion?'最初は相互回答':'3枚から選ぶ';
+    document.getElementById('question-action-sub').textContent=initialQuestion?'最初は相互回答':'4枚から選ぶ';
     document.getElementById('peek-action').disabled=!mine||v.deckRemaining===0||initialQuestion;
     document.getElementById('guess-action').disabled=!mine||initialQuestion;
     document.getElementById('guess-action-sub').textContent=handSize+'まいを当てる';
@@ -845,8 +845,8 @@ function renderQuestionHand(){
   const initialQuestion=v.initialQuestionPending && v.turn===v.role;
   document.getElementById('question-title').textContent=initialQuestion?'⚡ 最初の相互回答質問':'💬 どれを聞く？';
   document.getElementById('question-modal-note').textContent=initialQuestion
-    ? '動物か季節の数・種類を聞きます。あなたも同じ問いに答えます。'
-    : '質問の山からランダムに出た3枚です。';
+    ? '動物か季節の数を聞きます。あなたも同じ問いに答えます。'
+    : '質問の山からランダムに出た4枚です。';
   const offer=v.yourOffer||[];
   document.getElementById('question-hand').innerHTML=offer.length
     ? offer.map(questionCardHTML).join('')

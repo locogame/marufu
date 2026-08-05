@@ -66,7 +66,7 @@ try {
                 $normal = suiri_normal_cards();
                 $unusedNos = array_values(array_diff(array_keys($normal), array_keys($state['asked'][$role])));
                 shuffle($unusedNos);
-                $chosenNos = array_slice($unusedNos, 0, 3);
+                $chosenNos = array_slice($unusedNos, 0, 4);
                 $state['offers'][$role] = array_map(fn($no) => $normal[$no], $chosenNos);
             }
         }

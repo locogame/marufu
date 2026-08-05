@@ -159,14 +159,14 @@ function suiri_normal_cards(): array
     ];
 }
 
-// ⚡相互回答の別枠4種（先手の最初の1回だけ使える）。
+// ⚡相互回答の別枠2種（先手の最初の1回だけ使える）。
+// 103/104（strong-animal-kinds/strong-season-kinds）は質問定義には残すが、
+// このゲームでは初手にも通常プールにも出さないため未使用となる。
 function suiri_initial_cards(): array
 {
     return [
         101 => 'strong-animal-count',
         102 => 'strong-season-count',
-        103 => 'strong-animal-kinds',
-        104 => 'strong-season-kinds',
     ];
 }
 
