@@ -298,7 +298,7 @@ header p{font-size:.62rem;color:rgba(255,255,255,.94);font-weight:700;margin-top
     <p><span class="num">2</span>残った山札から、おたがいに<b>2まいずつ自分だけで確認</b>して取りのぞくよ。残り6まいがゲーム中の山札。</p>
     <p><span class="num">3</span>先手の最初は、動物か季節の枚数を聞く<b>相互回答質問</b>。質問した人も同じ問いに答えるよ。</p>
     <p><span class="num">4</span>その後の手番では、<b>予想する・3択の質問カードから1枚選ぶ・山札を1枚見る</b>のどれか1つだけ。</p>
-    <p><span class="num">5</span>質問カードは15まい。同じカードは1ゲームに1回だけ使えるよ。</p>
+    <p><span class="num">5</span>質問カードは16まい。同じカードは1ゲームに1回だけ使えるよ。</p>
     <p><span class="num">6</span>あいての3まいがわかったら、次の自分の手番に「これだ！」。全部合えば勝ち、<span class="danger">1まいでも違うと負け</span>だよ。</p>
   </section>
   <button class="start-btn" onclick="startGame()">▶ なぞあて スタート！</button>
@@ -675,6 +675,17 @@ function selectQuestionTemplate(key){
   if(!G||G.turn!=='p'||G.over||!G.playerChoices?.some(q=>q.key===key))return;
   const q=QUESTION_BY_KEY[key];
   if(q.variants.length===1){askQuestion(key,q.variants[0].id);return;}
+  if(q.key==='card-common'){
+    // 見せられるのは、いま自分が本当に持っている1まいだけ（答える側が選ぶ設定の対象外）。
+    G.pendingTemplate=key;
+    closeOverlay('question-overlay');
+    document.getElementById('variant-title').textContent='🎴 見せる1まいをえらぼう';
+    document.getElementById('variant-note').textContent='自分の手札から、見せる1まいを選ぼう。';
+    const mine=q.variants.filter(v=>G.playerHand.includes(Number(v.id.slice(1))));
+    document.getElementById('variant-grid').innerHTML=mine.map(v=>`<button class="variant-btn" onclick="askQuestion('${q.key}','${v.id}')">${v.label}</button>`).join('');
+    openOverlay('variant-overlay');
+    return;
+  }
   // 「答える側が（　）をえらぶ」設定では、答えるAIが選ぶ（⚡相互回答は聞く側のまま）
   if(variantMode==='answerer'&&!q.reciprocal){askQuestion(key,aiPickVariant(q).id);return;}
   G.pendingTemplate=key;
@@ -814,8 +825,10 @@ function chooseAIQuestion(){
   const options=dealQuestions(G.aiAsked);
   if(!options.length)return null;
   const choices=options.map(q=>{
-    const ranked=q.variants.map(v=>({v,left:expectedQuestionRemainder(v,aiPossible),score:questionScore(v,aiPossible)})).sort((a,b)=>a.left-b.left);
-    return {q,v:level===1?q.variants[Math.floor(Math.random()*q.variants.length)]:ranked[0].v,left:ranked[0].left,score:ranked[0].score};
+    // card-commonはAIが本当に持っている1まいしか見せられない。
+    const pool=q.key==='card-common'?q.variants.filter(v=>G.aiHand.includes(Number(v.id.slice(1)))):q.variants;
+    const ranked=pool.map(v=>({v,left:expectedQuestionRemainder(v,aiPossible),score:questionScore(v,aiPossible)})).sort((a,b)=>a.left-b.left);
+    return {q,v:level===1?pool[Math.floor(Math.random()*pool.length)]:ranked[0].v,left:ranked[0].left,score:ranked[0].score};
   });
   if(level===1)return choices[Math.floor(Math.random()*choices.length)];
   if(level===3){
@@ -865,8 +878,8 @@ function aiTurn(){
     addLog('🤖 AIが山札を1まい見ました（内容はあなたにひみつ）');
     setBanner('🤖「山札のカードを1まい見たよ。これは ひみつ！」');
   }else if(q){
-    // 「答える側が（　）をえらぶ」設定では、ここでプレイヤーの選択を待つ
-    if(variantMode==='answerer'&&!q.reciprocal){G.pendingAIQuestion=q;openAnswerVariant(q);return;}
+    // 「答える側が（　）をえらぶ」設定では、ここでプレイヤーの選択を待つ（card-commonはAI自身の手札で決まるため対象外）
+    if(variantMode==='answerer'&&!q.reciprocal&&q.key!=='card-common'){G.pendingAIQuestion=q;openAnswerVariant(q);return;}
     resolveAIQuestion(q,v);return;
   }else{
     // すべての手がかりを使っても複数候補なら、残った候補から勝負する

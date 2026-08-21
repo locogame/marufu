@@ -2,7 +2,7 @@
 declare(strict_types=1);
 
 // suiri.html の makeQuestions() をサーバー権威判定用にPHP移植したもの。
-// 質問セット（15枚＋⚡4種）を変更するときは、必ず suiri.html 側の makeQuestions() と
+// 質問セット（16枚＋⚡4種）を変更するときは、必ず suiri.html 側の makeQuestions() と
 // この関数の両方を合わせて直すこと（言語が違うため自動同期はできない）。
 //
 // カード番号 0..15 = 動物index(0..3)*4 + 季節index(0..3)。
@@ -123,6 +123,12 @@ function suiri_answer(string $key, string $variantId, int $hand): int
         case 'season-one':
             return suiri_cnt($hand, suiri_season_mask($nums[0])) === 1 ? 1 : 0;
 
+        case 'card-common': {
+            $motifIdx = intdiv($nums[0], 4);
+            $seasonIdx = $nums[0] % 4;
+            return suiri_cnt($hand, suiri_type_mask($motifIdx) | suiri_season_mask($seasonIdx));
+        }
+
         case 'strong-animal-count':
             return suiri_cnt($hand, suiri_type_mask($nums[0]));
         case 'strong-season-count':
@@ -137,7 +143,7 @@ function suiri_answer(string $key, string $variantId, int $hand): int
     }
 }
 
-// 通常デッキ15枚の定義（no => key）。強い⚡系(101-104)は別枠なので含めない。
+// 通常デッキ16枚の定義（no => key）。強い⚡系(101-104)は別枠なので含めない。
 function suiri_normal_cards(): array
 {
     return [
@@ -156,6 +162,7 @@ function suiri_normal_cards(): array
         13 => 'season-odd',
         14 => 'animal-one',
         15 => 'season-one',
+        16 => 'card-common',
     ];
 }
 
@@ -201,6 +208,7 @@ function suiri_variants_for(string $key): array
         case 'strong-season-count':
             return ['s0', 's1', 's2', 's3'];
         case 'card-present':
+        case 'card-common':
             return array_map(fn($c) => "c$c", range(0, 15));
         case 'animal-all':
         case 'season-all':

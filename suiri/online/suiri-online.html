@@ -115,6 +115,7 @@ header p{font-size:.62rem;color:rgba(255,255,255,.94);font-weight:700;margin-top
 .question-card.season{background:linear-gradient(145deg,#dff4ec,#abdccb);color:#2e7167;}
 .question-card.pair{background:linear-gradient(145deg,#fff0d1,#f3ca83);color:#81552c;}
 .question-card.single{background:linear-gradient(145deg,#e4edfb,#b8cbea);color:#3f6091;}
+.question-card.match{background:linear-gradient(145deg,#ffe6ef,#f0aec6);color:#8f3a5c;}
 .question-card.strong{background:linear-gradient(145deg,#f6e4ff,#d9aceb);color:#703e86;}
 .question-card .q-cost{display:block;font-size:.48rem;margin-top:5px;color:#8b4770;}
 .variant-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;}
@@ -771,9 +772,9 @@ async function openQuestions(){
 
 function questionCardHTML(key){
   const q=QUESTION_BY_KEY[key];
-  const style=q.category==='動物'?'animal':q.category==='季節'?'season':q.category==='くらべる'?'pair':q.category==='1まい'?'single':'strong';
-  const tag=q.category==='動物'?'どうぶつ':q.category==='季節'?'きせつ':q.category==='くらべる'?'くらべる':q.category==='1まい'?'1まい':'相互回答';
-  const icon=style==='animal'?'🐾':style==='season'?'🌸':style==='pair'?'🧩':style==='single'?'🔍':'⚡';
+  const style=q.category==='動物'?'animal':q.category==='季節'?'season':q.category==='くらべる'?'pair':q.category==='1まい'?'single':q.category==='ぴったり'?'match':'strong';
+  const tag=q.category==='動物'?'どうぶつ':q.category==='季節'?'きせつ':q.category==='くらべる'?'くらべる':q.category==='1まい'?'1まい':q.category==='ぴったり'?'ぴったり':'相互回答';
+  const icon=style==='animal'?'🐾':style==='season'?'🌸':style==='pair'?'🧩':style==='single'?'🔍':style==='match'?'💞':'⚡';
   return `<button class="question-card ${style}" onclick="pickQuestionKey('${key}')"><span class="q-tag">${tag}</span><span class="q-icon">${icon}</span><span>${q.label}</span>${q.reciprocal?'<span class="q-cost">↔ ふたりとも答える</span>':''}</button>`;
 }
 
@@ -795,6 +796,19 @@ function pickQuestionKey(key){
   pendingKey=key;
   if(q.variants.length===1){
     askQuestion(key, q.variants[0].id);
+    return;
+  }
+  if(q.key==='card-common'){
+    // 見せられるのは、いま自分が本当に持っている1まいだけ。
+    document.getElementById('variant-title').textContent='🎴 見せる1まいをえらぼう';
+    document.getElementById('variant-note').textContent='自分の手札から、見せる1まいを選ぼう。';
+    const hand=latestView?.yourHand||[];
+    const mine=q.variants.filter(v=>hand.includes(Number(v.id.slice(1))));
+    document.getElementById('variant-grid').innerHTML=mine.map(v=>
+      `<button class="variant-btn" onclick="askQuestion('${key}','${v.id}')">${v.label}</button>`
+    ).join('');
+    closeOverlay('question-overlay');
+    openOverlay('variant-overlay');
     return;
   }
   document.getElementById('variant-title').textContent=q.reciprocal?'⚡ 相互回答質問を完成':'🔎 質問を完成させよう';

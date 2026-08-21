@@ -82,6 +82,13 @@ try {
             $pdo->rollBack();
             room_fail(422, 'invalid_variant');
         }
+        if ($key === 'card-common') {
+            $shownCard = (int) substr($variantId, 1);
+            if (!in_array($shownCard, $state['hands'][$role], true)) {
+                $pdo->rollBack();
+                room_fail(422, 'card_not_in_hand');
+            }
+        }
 
         $normalCards = suiri_normal_cards();
         $initialCards = suiri_initial_cards();

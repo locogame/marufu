@@ -80,6 +80,15 @@ function makeQuestions(){
   add(14,'easy','animal-one','（動物）はちょうど1匹？','動物',MOTIFS.map((x,i)=>variant(`a${i}`,`${mi(i)} ${mn(i)}はちょうど1匹？`,hand=>cnt(hand,TYPE_MASKS[i])===1?1:0)));
   add(15,'easy','season-one','（季節）はちょうど1枚？','季節',SEASONS.map((x,i)=>variant(`s${i}`,`${si(i)} ${sn(i)}はちょうど1枚？`,hand=>cnt(hand,SEASON_MASKS[i])===1?1:0)));
 
+  // ── 16：自分の手札を1まい見せて、共通の要素を数えてもらう ──
+  // variantIdの数字＝見せるカード番号(0..15)。見せられるのは実際に自分の手札にある1まいだけ
+  // （どの1まいを見せられるかはHTML側で、その手番の本人の手札にしぼりこむ）。
+  add(16,'easy','card-common','自分の1まいを見せて、共通の要素は何まい？','ぴったり',Array.from({length:16},(_,c)=>{
+    const mIdx=Math.floor(c/4), sIdx=c%4;
+    const mask=(TYPE_MASKS[mIdx]|SEASON_MASKS[sIdx])>>>0;
+    return variant(`c${c}`,`${si(sIdx)}${sn(sIdx)}の${mi(mIdx)}${mn(mIdx)}を見せるね。同じ動物か同じ季節のカードは何まい？`,hand=>cnt(hand,mask),v=>`${v}まい`);
+  }));
+
   // ── ⚡ 相互回答（通常デッキとは別枠。先手の最初の1回だけ）──
   // 101/102のみ初手で提示される（各HTML側のINITIAL_QUESTIONS/suiri_initial_cardsで絞り込み）。
   // 103/104は定義だけ残していて、現在のゲームでは使われない。

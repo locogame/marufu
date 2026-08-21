@@ -92,6 +92,7 @@ $questionNames = [
     'animal-none-but' => '🔥（動物A）はいなくて（動物B）はいる？',
     'cross-xor' => '🔥（動物）と（季節）、あるのは片方だけ？',
     'animal-xor' => '🔥（動物A）と（動物B）、いるのは片方だけ？',
+    'card-common' => '🌱🎴 自分の1まいを見せて、共通の要素は何まい？',
     // ⚡ 相互回答（両面カードとは別枠）
     'strong-animal-count' => '⚡（動物）は何匹？',
     'strong-season-count' => '⚡（季節）は何枚？',
